@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gigprofit-v1';
+const CACHE_NAME = 'gigprofit-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
