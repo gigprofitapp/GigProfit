@@ -1,6 +1,8 @@
 // ============================
 // GIGPROFIT — APP CORE
 // ============================
+if (typeof window._gigprofitLoaded === 'undefined') {
+window._gigprofitLoaded = true;
 
 const SUPABASE_URL = 'https://avydceapvbefcaquvazq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eWRjZWFwdmJlZmNhcXV2YXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MTU2OTYsImV4cCI6MjA5NjE5MTY5Nn0.VKU-cx37t9Np7DB_1T7kPVeGmkp_CZEEgeo0dqe4BPQ';
@@ -370,9 +372,9 @@ async function initApp() {
     }
   });
 
-  // SW registration
+  // SW — unregister old cache then register fresh
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW:', err));
+    navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister())).then(()=>navigator.serviceWorker.register('./sw.js'));
   }
 }
 
@@ -407,3 +409,5 @@ function updateHeaderUser() {
 
 // Start
 window.addEventListener('DOMContentLoaded', initApp);
+
+} // end gigprofit guard
