@@ -165,7 +165,7 @@ async function loadHome(){
     {data:inc},{data:exp},
     {data:wInc},{data:wExp},
     {data:tInc},{data:tExp},
-    {data:mInc},{data:mExp}
+    {data:mInc},{data:mExpData}
   ]=await Promise.all([
     db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
     db.from('gp_expenses').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
@@ -192,7 +192,7 @@ async function loadHome(){
   // Goal
   const goal=userProfile?.monthly_goal||0;
   const mGross=sumF(mInc,'amount')+sumF(mInc,'tips');
-  const mExp=sumF(mExp,'amount');
+  const mExp=sumF(mExpData,'amount');
   const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
   const mProfit=mGross-mExp-mTax;
   const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
