@@ -87,6 +87,7 @@ function showPage(name) {
   if (name === 'income') loadIncomePage();
   if (name === 'expenses') loadExpensePage();
   if (name === 'settings') loadSettings();
+  if (name === 'mileage') loadMileagePage();
 }
 
 function openModal(id) { $(id).style.display = 'flex'; }
@@ -297,6 +298,7 @@ function estimateTax(net, country, status) {
 }
 
 async function loadDashboard() {
+  loadWeeklyChart();
   if (!currentUser) return;
   const cur = getCurrency();
   const { start, end } = getPeriodDates(currentPeriod);
@@ -666,3 +668,239 @@ async function initApp() {
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
+
+// ============================
+// PHASE 2 — EARNINGS CHART
+// ============================
+
+async function loadWeeklyChart() {
+  const canvas = document.getElementById('earnings-chart');
+  if (!canvas || !currentUser) return;
+  const ctx = canvas.getContext('2d');
+  const cur = getCurrency();
+
+  // Get last 7 days
+  const days = [];
+  const labels = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+    labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+  }
+
+  const { data: inc } = await sb.from('gp_income')
+    .select('date,amount,tips')
+    .eq('user_id', currentUser.id)
+    .gte('date', days[0])
+    .lte('date', days[6]);
+
+  const { data: exp } = await sb.from('gp_expenses')
+    .select('date,amount')
+    .eq('user_id', currentUser.id)
+    .gte('date', days[0])
+    .lte('date', days[6]);
+
+  const incByDay = {};
+  const expByDay = {};
+  days.forEach(d => { incByDay[d] = 0; expByDay[d] = 0; });
+  (inc||[]).forEach(r => { incByDay[r.date] = (incByDay[r.date]||0) + (+r.amount||0) + (+r.tips||0); });
+  (exp||[]).forEach(r => { expByDay[r.date] = (expByDay[r.date]||0) + (+r.amount||0); });
+
+  const incData = days.map(d => incByDay[d]);
+  const expData = days.map(d => expByDay[d]);
+  const profitData = days.map(d => Math.max(0, incByDay[d] - expByDay[d]));
+  const maxVal = Math.max(...incData, 1);
+
+  // Clear canvas
+  const W = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+  const H = canvas.height = 180 * window.devicePixelRatio;
+  canvas.style.height = '180px';
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const w = canvas.offsetWidth;
+  const h = 180;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const padL = 8, padR = 8, padT = 16, padB = 36;
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+  const barW = (chartW / 7) * 0.5;
+  const gap = chartW / 7;
+
+  // Draw bars
+  days.forEach((d, i) => {
+    const x = padL + i * gap + gap * 0.25;
+    const incH = (incData[i] / maxVal) * chartH;
+    const expH = (expData[i] / maxVal) * chartH;
+    const isToday = d === todayISO();
+
+    // Income bar (green)
+    const incGrad = ctx.createLinearGradient(0, padT + chartH - incH, 0, padT + chartH);
+    incGrad.addColorStop(0, '#00d4aa');
+    incGrad.addColorStop(1, 'rgba(0,212,170,0.3)');
+    ctx.fillStyle = incGrad;
+    ctx.beginPath();
+    ctx.roundRect(x, padT + chartH - incH, barW, incH, [4, 4, 0, 0]);
+    ctx.fill();
+
+    // Expense bar (red, smaller behind)
+    if (expData[i] > 0) {
+      const expH2 = (expData[i] / maxVal) * chartH;
+      ctx.fillStyle = 'rgba(255,107,107,0.7)';
+      ctx.beginPath();
+      ctx.roundRect(x + barW * 0.6, padT + chartH - expH2, barW * 0.4, expH2, [3, 3, 0, 0]);
+      ctx.fill();
+    }
+
+    // Amount label above bar
+    if (incData[i] > 0) {
+      ctx.fillStyle = '#00d4aa';
+      ctx.font = `bold ${10 * (w/375)}px DM Sans, sans-serif`;
+      ctx.textAlign = 'center';
+      const sym = cur === 'CAD' ? 'C$' : '$';
+      ctx.fillText(sym + incData[i].toFixed(0), x + barW/2, padT + chartH - incH - 4);
+    }
+
+    // Day label
+    ctx.fillStyle = isToday ? '#00d4aa' : 'rgba(255,255,255,0.5)';
+    ctx.font = `${isToday ? 'bold ' : ''}${11 * (w/375)}px DM Sans, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x + barW/2, h - 8);
+
+    // Today indicator dot
+    if (isToday) {
+      ctx.fillStyle = '#00d4aa';
+      ctx.beginPath();
+      ctx.arc(x + barW/2, h - 20, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // Weekly total
+  const weekTotal = incData.reduce((a,b) => a+b, 0);
+  const weekExp = expData.reduce((a,b) => a+b, 0);
+  const el = document.getElementById('chart-week-total');
+  if (el) {
+    const sym = cur === 'CAD' ? 'CA$' : '$';
+    el.textContent = sym + weekTotal.toFixed(0) + ' earned · ' + sym + weekExp.toFixed(0) + ' spent';
+  }
+}
+
+// ============================
+// PHASE 2 — MILEAGE TRACKER
+// ============================
+
+const IRS_RATE_2024 = 0.67; // per mile
+const CRA_RATE_2024 = 0.70; // CAD per km
+
+async function loadMileagePage() {
+  if (!currentUser) return;
+  const cur = getCurrency();
+  const isCAD = cur === 'CAD';
+  const rate = isCAD ? CRA_RATE_2024 : IRS_RATE_2024;
+  const unit = isCAD ? 'km' : 'mi';
+
+  // This month
+  const now = new Date();
+  const mStart = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-01';
+
+  const { data: mInc } = await sb.from('gp_income')
+    .select('miles,date')
+    .eq('user_id', currentUser.id)
+    .gte('date', mStart)
+    .lte('date', todayISO());
+
+  const totalMiles = (mInc||[]).reduce((s,r) => s + (+r.miles||0), 0);
+  const deduction = totalMiles * rate;
+
+  // Update mileage page
+  const container = document.getElementById('mileage-content');
+  if (!container) return;
+
+  // Year total
+  const yStart = now.getFullYear() + '-01-01';
+  const { data: yInc } = await sb.from('gp_income')
+    .select('miles')
+    .eq('user_id', currentUser.id)
+    .gte('date', yStart)
+    .lte('date', todayISO());
+  const yearMiles = (yInc||[]).reduce((s,r) => s + (+r.miles||0), 0);
+  const yearDeduction = yearMiles * rate;
+  const sym = isCAD ? 'CA$' : '$';
+
+  container.innerHTML = `
+    <div class="mileage-hero">
+      <div class="mileage-stat">
+        <div class="mileage-number">${totalMiles.toFixed(0)}</div>
+        <div class="mileage-label">${unit} this month</div>
+      </div>
+      <div class="mileage-divider"></div>
+      <div class="mileage-stat">
+        <div class="mileage-number" style="color:var(--income-color)">${sym}${deduction.toFixed(0)}</div>
+        <div class="mileage-label">tax deduction</div>
+      </div>
+    </div>
+
+    <div class="section-card" style="margin-bottom:14px">
+      <div class="section-header"><h3>IRS Rate ${now.getFullYear()}</h3></div>
+      <div class="mileage-rate-row">
+        <div class="mileage-rate-info">
+          <div class="mileage-rate-value">${isCAD ? 'CA$0.70' : '$0.67'}<span>/mile</span></div>
+          <div class="mileage-rate-note">Standard ${isCAD ? 'CRA' : 'IRS'} mileage deduction rate</div>
+        </div>
+        <div class="mileage-rate-badge">2024</div>
+      </div>
+    </div>
+
+    <div class="section-card" style="margin-bottom:14px">
+      <div class="section-header"><h3>Year to Date</h3></div>
+      <div class="mileage-ytd-row">
+        <div class="mileage-ytd-item">
+          <div class="mileage-ytd-val">${yearMiles.toFixed(0)} ${unit}</div>
+          <div class="mileage-ytd-label">Total miles driven</div>
+        </div>
+        <div class="mileage-ytd-item">
+          <div class="mileage-ytd-val" style="color:var(--income-color)">${sym}${yearDeduction.toFixed(2)}</div>
+          <div class="mileage-ytd-label">Total deduction</div>
+        </div>
+      </div>
+      <div class="mileage-tip">
+        💡 Log miles on each income entry to track your deduction automatically
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header"><h3>Recent Trips</h3></div>
+      <div id="recent-miles-list">
+        ${await getRecentMilesList(unit, sym)}
+      </div>
+    </div>
+  `;
+}
+
+async function getRecentMilesList(unit, sym) {
+  const { data } = await sb.from('gp_income')
+    .select('date,platform,miles,amount,tips')
+    .eq('user_id', currentUser.id)
+    .not('miles', 'is', null)
+    .gt('miles', 0)
+    .order('date', { ascending: false })
+    .limit(10);
+
+  if (!data || !data.length) return '<div class="empty-state-sm">No mileage logged yet — add miles when logging income</div>';
+
+  const rate = (userProfile?.currency === 'CAD') ? CRA_RATE_2024 : IRS_RATE_2024;
+  return data.map(r => {
+    const info = PLATFORMS[r.platform] || { label: r.platform, emoji: '🚗' };
+    const ded = (+r.miles * rate).toFixed(2);
+    return `<div class="activity-item">
+      <div class="activity-icon">${info.emoji}</div>
+      <div class="activity-info">
+        <div class="activity-platform">${info.label}</div>
+        <div class="activity-meta">${fmtDate(r.date)} · ${sym}${ded} deduction</div>
+      </div>
+      <div class="activity-amount income">${r.miles} ${unit}</div>
+    </div>`;
+  }).join('');
+}
