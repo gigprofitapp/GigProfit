@@ -346,7 +346,6 @@ async function drawChart() {
   });
 
   const maxVal = Math.max(...incomeData, ...expenseData, 1);
-  const W = canvas.width, H = canvas.height;
   const padL = 10, padR = 10, padT = 30, padB = 30;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
