@@ -1,42 +1,30 @@
 {
-  "name": "GigProfit — Gig Worker Finance Tracker",
+  "name": "GigProfit - Gig Worker Tracker",
   "short_name": "GigProfit",
   "description": "Track earnings, expenses, and real profit for Uber, DoorDash, Lyft, Instacart & more.",
+  "id": "/GigProfit/",
   "start_url": "/GigProfit/",
   "scope": "/GigProfit/",
   "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#00d4aa",
   "orientation": "portrait",
-  "background_color": "#0a0f1e",
-  "theme_color": "#0a0f1e",
   "categories": ["finance", "productivity"],
   "icons": [
-    {
-      "src": "/GigProfit/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
+    { "src": "/GigProfit/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/GigProfit/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
     {
       "src": "/GigProfit/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "form_factor": "narrow",
+      "label": "GigProfit Dashboard"
     }
   ],
   "shortcuts": [
-    {
-      "name": "Log Income",
-      "short_name": "Income",
-      "description": "Quickly log earnings",
-      "url": "/GigProfit/?action=income",
-      "icons": [{ "src": "/GigProfit/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Log Expense",
-      "short_name": "Expense",
-      "description": "Quickly log an expense",
-      "url": "/GigProfit/?action=expense",
-      "icons": [{ "src": "/GigProfit/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    }
+    { "name": "Add Income", "url": "/GigProfit/?page=income", "icons": [{ "src": "/GigProfit/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Add Expense", "url": "/GigProfit/?page=expenses", "icons": [{ "src": "/GigProfit/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
   ]
 }
