@@ -241,3 +241,34 @@ button { cursor: pointer; border: none; background: none; }
 .radio-option:has(input:checked) { border-color: var(--green); background: rgba(0,212,170,0.08); }
 .radio-option input[type="radio"] { accent-color: var(--green); width: 16px; height: 16px; }
 .radio-option span { font-size: 0.9rem; }
+
+/* ── TAX SUMMARY ────────────────────────────── */
+.year-summary-card { background: linear-gradient(135deg, #0d1f3c, #0a1628); border: 1px solid rgba(0,212,170,0.2); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.year-summary-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+.year-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.year-stat { display: flex; flex-direction: column; gap: 3px; }
+.year-label { font-size: 0.72rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+.year-value { font-size: 1.1rem; font-weight: 700; }
+.year-value.positive { color: var(--green); }
+.year-value.negative { color: var(--red); }
+.year-value.warning { color: var(--yellow); }
+.tax-disclaimer { font-size: 0.78rem; color: var(--text2); background: rgba(255,165,0,0.08); border: 1px solid rgba(255,165,0,0.2); border-radius: 8px; padding: 8px 12px; }
+.quarter-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.quarter-card.current { border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.04); }
+.quarter-card.past { opacity: 0.8; }
+.quarter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.quarter-label { font-size: 1.1rem; font-weight: 800; margin-right: 8px; }
+.quarter-months { font-size: 0.85rem; color: var(--text2); }
+.quarter-status { font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.quarter-status.past { background: rgba(255,255,255,0.08); color: var(--text2); }
+.quarter-status.current { background: rgba(0,212,170,0.15); color: var(--green); }
+.quarter-status.future { background: rgba(0,102,255,0.1); color: #4da3ff; }
+.quarter-body { display: flex; flex-direction: column; gap: 8px; }
+.quarter-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.quarter-row:last-of-type { border-bottom: none; }
+.quarter-tax { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 10px 14px; background: rgba(255,165,0,0.08); border-radius: var(--radius-sm); border: 1px solid rgba(255,165,0,0.2); }
+.quarter-tax span:first-child { font-weight: 600; font-size: 0.9rem; }
+.tax-amount { font-size: 1.2rem; font-weight: 800; color: var(--yellow); }
+.quarter-due { font-size: 0.78rem; color: var(--text2); margin-top: 8px; }
+.quarter-tip { margin-top: 10px; padding: 8px 12px; background: rgba(0,212,170,0.08); border-radius: 8px; font-size: 0.82rem; color: var(--green); }
+.header-year { font-size: 0.9rem; color: var(--text2); font-weight: 600; }

@@ -190,7 +190,7 @@ async function finishOnboarding() {
 // ── NAVIGATION ────────────────────────────────────────────
 function showPage(page) {
   currentPage = page;
-  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'profile'];
+  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'tax', 'profile'];
   const isAppPage = appPages.includes(page);
   const shell = document.getElementById('appShell');
 
@@ -215,6 +215,7 @@ function showPage(page) {
   if (page === 'income') loadIncome();
   if (page === 'expenses') loadExpenses();
   if (page === 'mileage') loadMileage();
+  if (page === 'tax') loadTaxSummary();
   if (page === 'profile') loadProfilePage();
 }
 
@@ -1045,4 +1046,115 @@ function setExportRange(range) {
   // Highlight selected button
   document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
+}
+
+// ── QUARTERLY TAX SUMMARY ─────────────────────────────────
+
+async function loadTaxSummary() {
+  if (!currentUser) return;
+  const now = new Date();
+  const year = now.getFullYear();
+  const country = userProfile?.country || 'US';
+  const taxRate = country === 'CA' ? 0.28 : 0.153;
+  const taxLabel = country === 'CA' ? '28% (CRA estimate)' : '15.3% SE Tax';
+  const currentQ = Math.floor(now.getMonth() / 3) + 1;
+
+  // Fetch full year data
+  const [{ data: income }, { data: expenses }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`).lte('date', `${year}-12-31`),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`).lte('date', `${year}-12-31`)
+  ]);
+
+  const quarters = [
+    { q: 1, label: 'Q1', months: 'Jan – Mar', start: `${year}-01-01`, end: `${year}-03-31`, due: `Apr 15, ${year}` },
+    { q: 2, label: 'Q2', months: 'Apr – Jun', start: `${year}-04-01`, end: `${year}-06-30`, due: `Jun 16, ${year}` },
+    { q: 3, label: 'Q3', months: 'Jul – Sep', start: `${year}-07-01`, end: `${year}-09-30`, due: `Sep 15, ${year}` },
+    { q: 4, label: 'Q4', months: 'Oct – Dec', start: `${year}-10-01`, end: `${year}-12-31`, due: `Jan 15, ${year + 1}` }
+  ];
+
+  let totalYearIncome = 0, totalYearExpenses = 0, totalYearTax = 0;
+
+  const quarterCards = quarters.map(({ q, label, months, start, end, due }) => {
+    const qIncome = (income || []).filter(r => r.date >= start && r.date <= end);
+    const qExpenses = (expenses || []).filter(r => r.date >= start && r.date <= end);
+
+    const gross = qIncome.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
+    const exp = qExpenses.reduce((s, r) => s + parseFloat(r.amount), 0);
+    const miles = qIncome.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
+    const mileageDeduction = miles * 0.70;
+    const net = Math.max(0, gross - exp - mileageDeduction);
+    const tax = net * 0.9235 * taxRate;
+    const isPast = q < currentQ;
+    const isCurrent = q === currentQ;
+    const isFuture = q > currentQ;
+
+    totalYearIncome += gross;
+    totalYearExpenses += exp;
+    totalYearTax += tax;
+
+    const status = isPast ? '✅ Past' : isCurrent ? '⚡ Current' : '🔜 Upcoming';
+    const statusClass = isPast ? 'past' : isCurrent ? 'current' : 'future';
+
+    return `
+    <div class="quarter-card ${statusClass}">
+      <div class="quarter-header">
+        <div>
+          <span class="quarter-label">${label}</span>
+          <span class="quarter-months">${months}</span>
+        </div>
+        <span class="quarter-status ${statusClass}">${status}</span>
+      </div>
+      <div class="quarter-body">
+        <div class="quarter-row">
+          <span>Gross Income</span>
+          <span class="positive">${fmt(gross)}</span>
+        </div>
+        <div class="quarter-row">
+          <span>Expenses</span>
+          <span class="negative">-${fmt(exp)}</span>
+        </div>
+        <div class="quarter-row">
+          <span>Mileage Deduction</span>
+          <span class="negative">-${fmt(mileageDeduction)}</span>
+        </div>
+        <div class="quarter-row">
+          <span>Net Profit</span>
+          <span>${fmt(net)}</span>
+        </div>
+        <div class="quarter-tax">
+          <span>Est. Tax Due</span>
+          <span class="tax-amount">${fmt(tax)}</span>
+        </div>
+        <div class="quarter-due">📅 Due: ${due}</div>
+      </div>
+      ${isCurrent ? `<div class="quarter-tip">💡 Set aside ${fmt(tax)} by ${due}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const yearSummary = `
+  <div class="year-summary-card">
+    <h3>📊 ${year} Full Year Summary</h3>
+    <div class="year-grid">
+      <div class="year-stat">
+        <span class="year-label">Total Income</span>
+        <span class="year-value positive">${fmt(totalYearIncome)}</span>
+      </div>
+      <div class="year-stat">
+        <span class="year-label">Total Expenses</span>
+        <span class="year-value negative">${fmt(totalYearExpenses)}</span>
+      </div>
+      <div class="year-stat">
+        <span class="year-label">Est. Annual Tax</span>
+        <span class="year-value warning">${fmt(totalYearTax)}</span>
+      </div>
+      <div class="year-stat">
+        <span class="year-label">Tax Rate</span>
+        <span class="year-value">${taxLabel}</span>
+      </div>
+    </div>
+    <div class="tax-disclaimer">⚠️ These are estimates only. Consult a tax professional for accurate figures.</div>
+  </div>`;
+
+  document.getElementById('taxSummaryContent').innerHTML = yearSummary + quarterCards;
+  document.getElementById('taxYear').textContent = year;
 }
