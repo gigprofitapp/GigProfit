@@ -34,9 +34,8 @@ button { cursor: pointer; border: none; background: none; }
 /* ── PAGES ─────────────────────────────────── */
 .page { display: none; position: absolute; inset: 0; background: var(--bg); overflow-y: auto; }
 .page.active { display: flex; flex-direction: column; }
-.app-shell { position: fixed; inset: 0; flex-direction: column; }
-.app-shell[style*="display:none"] { display: none !important; }
-.app-shell:not([style*="display:none"]) { display: flex; }
+.app-shell { position: fixed; inset: 0; flex-direction: column; display: none; }
+.app-shell.visible { display: flex; }
 .app-shell .page { position: relative; flex: 1; overflow: hidden; }
 .app-shell .page.active { display: flex; flex-direction: column; overflow: hidden; }
 
@@ -187,7 +186,8 @@ button { cursor: pointer; border: none; background: none; }
 .btn-signout { width: 100%; padding: 14px; background: rgba(255,77,77,0.1); color: var(--red); border-radius: var(--radius-sm); font-weight: 700; margin-top: 8px; margin-bottom: 24px; }
 
 /* ── BOTTOM NAV ─────────────────────────────── */
-.bottom-nav { display: flex; background: var(--bg2); border-top: 1px solid var(--border); padding: 8px 0 max(8px, env(safe-area-inset-bottom)); flex-shrink: 0; }
+.bottom-nav { display: none; background: var(--bg2); border-top: 1px solid var(--border); padding: 8px 0 max(8px, env(safe-area-inset-bottom)); flex-shrink: 0; }
+.app-shell .bottom-nav { display: flex; }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; color: var(--text2); transition: color 0.2s; }
 .nav-item.active { color: var(--green); }
 .nav-icon { font-size: 1.2rem; line-height: 1; }
