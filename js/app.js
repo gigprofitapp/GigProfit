@@ -1,13 +1,11 @@
 // ============================
 // GIGPROFIT — APP CORE
 // ============================
-if (typeof window._gigprofitLoaded === 'undefined') {
-window._gigprofitLoaded = true;
+var SUPABASE_URL = 'https://avydceapvbefcaquvazq.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eWRjZWFwdmJlZmNhcXV2YXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MTU2OTYsImV4cCI6MjA5NjE5MTY5Nn0.VKU-cx37t9Np7DB_1T7kPVeGmkp_CZEEgeo0dqe4BPQ';
 
-const SUPABASE_URL = 'https://avydceapvbefcaquvazq.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eWRjZWFwdmJlZmNhcXV2YXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MTU2OTYsImV4cCI6MjA5NjE5MTY5Nn0.VKU-cx37t9Np7DB_1T7kPVeGmkp_CZEEgeo0dqe4BPQ';
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+if (!window._sb) window._sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var supabase = window._sb;
 
 // ---- App State ----
 let currentUser = null;
@@ -409,5 +407,3 @@ function updateHeaderUser() {
 
 // Start
 window.addEventListener('DOMContentLoaded', initApp);
-
-} // end gigprofit guard
