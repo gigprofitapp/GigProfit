@@ -1,461 +1,438 @@
-// ============================================================
-// GIGPROFIT — COMPLETE APP v3
-// Fixes: onboarding, edit/delete, empty states, loading states
-// ============================================================
-
+// ── GIGPROFIT v4 ──────────────────────────────
 const SUPABASE_URL = 'https://avydceapvbefcaquvazq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2eWRjZWFwdmJlZmNhcXV2YXpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MTU2OTYsImV4cCI6MjA5NjE5MTY5Nn0.VKU-cx37t9Np7DB_1T7kPVeGmkp_CZEEgeo0dqe4BPQ';
-
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentUser = null;
-let userProfile = null;
-let currentPage = 'dashboard';
-let editingId = null;
+let currentUser = null, userProfile = null, editingId = null;
+let homePeriod = 'today', earnFilter = 'week', expFilter = 'week';
+let obData = { platforms: [], country: 'US', currency: 'USD', tax_status: 'single', monthly_goal: 3000 };
 
-// ── INIT ──────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  applyTheme(localStorage.getItem('gp-theme') || 'dark');
+  initReportMonths();
   const { data: { session } } = await db.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await loadProfile();
-  } else {
-    showPage('auth');
-  }
-
-  db.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      currentUser = session.user;
-      await loadProfile();
-    } else if (event === 'SIGNED_OUT') {
-      currentUser = null;
-      userProfile = null;
-      showPage('auth');
-    }
+  if (session) { currentUser = session.user; await loadProfile(); }
+  else showPage('auth');
+  db.auth.onAuthStateChange(async (e, s) => {
+    if (e === 'SIGNED_IN' && s) { currentUser = s.user; await loadProfile(); }
+    else if (e === 'SIGNED_OUT') { currentUser = null; userProfile = null; showPage('auth'); }
   });
-
-  // theme
-  const saved = localStorage.getItem('gp-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  updateThemeIcon(saved);
 });
 
-// ── THEME ─────────────────────────────────────────────────
+// ── THEME ─────────────────────────────────────
 function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('gp-theme', next);
-  updateThemeIcon(next);
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(t); localStorage.setItem('gp-theme', t);
 }
-function updateThemeIcon(theme) {
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
   const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+  if (btn) btn.textContent = t === 'dark' ? '🌙' : '☀️';
+  const si = document.getElementById('siTheme');
+  if (si) si.textContent = (t === 'dark' ? 'Dark' : 'Light') + ' ›';
 }
 
-// ── AUTH ──────────────────────────────────────────────────
-function switchTab(tab) {
+// ── AUTH ──────────────────────────────────────
+function switchAuthTab(tab, el) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-  event.target.classList.add('active');
+  el.classList.add('active');
   document.getElementById(tab + 'Form').classList.add('active');
 }
 
 async function signIn() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return toast('Please fill all fields', 'error');
   const btn = document.getElementById('signInBtn');
-  if (!email || !password) return showToast('Please enter email and password', 'error');
   setLoading(btn, true, 'Signing in...');
   const { error } = await db.auth.signInWithPassword({ email, password });
   setLoading(btn, false, 'Sign In');
-  if (error) showToast(error.message, 'error');
+  if (error) toast(error.message, 'error');
 }
 
 async function signUp() {
   const name = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
-  const password = document.getElementById('signupPassword').value;
+  const pw = document.getElementById('signupPassword').value;
+  if (!name || !email || !pw) return toast('Please fill all fields', 'error');
+  if (pw.length < 6) return toast('Password must be 6+ characters', 'error');
   const btn = document.getElementById('signUpBtn');
-  if (!name || !email || !password) return showToast('Please fill all fields', 'error');
-  if (password.length < 6) return showToast('Password must be at least 6 characters', 'error');
-  setLoading(btn, true, 'Creating account...');
-  const { error } = await db.auth.signUp({ email, password, options: { data: { full_name: name } } });
+  setLoading(btn, true, 'Creating...');
+  const { error } = await db.auth.signUp({ email, password: pw, options: { data: { full_name: name } } });
   setLoading(btn, false, 'Create Account');
-  if (error) showToast(error.message, 'error');
-  else showToast('Account created! Check your email to confirm.', 'success');
+  if (error) toast(error.message, 'error');
+  else toast('Account created! Check your email.', 'success');
 }
 
 async function signInWithGoogle() {
-  const { error } = await db.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: 'https://gigprofitapp.github.io/GigProfit/' }
-  });
-  if (error) showToast(error.message, 'error');
+  const { error } = await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://gigprofitapp.github.io/GigProfit/' } });
+  if (error) toast(error.message, 'error');
 }
 
 async function signOut() {
   await db.auth.signOut();
 }
 
-// ── PROFILE ───────────────────────────────────────────────
+// ── PROFILE LOAD ──────────────────────────────
 async function loadProfile() {
   const { data } = await db.from('profiles').select('*').eq('user_id', currentUser.id).single();
   userProfile = data;
-  if (!userProfile || !userProfile.onboarding_done) {
-    startOnboarding();
-  } else {
-    showPage('dashboard');
-  }
+  if (!userProfile || !userProfile.onboarding_done) startOnboarding();
+  else showPage('home');
 }
 
-// ── ONBOARDING ────────────────────────────────────────────
-let onboardingData = { platforms: [], country: 'US', currency: 'USD', tax_status: 'single', monthly_goal: 3000 };
-let onboardingStep = 1;
-
+// ── ONBOARDING ────────────────────────────────
 function startOnboarding() {
-  onboardingStep = 1;
-  onboardingData = { platforms: [], country: 'US', currency: 'USD', tax_status: 'single', monthly_goal: 3000 };
-  showPage('onboarding');
-  showOnboardingStep(1);
+  obData = { platforms: [], country: 'US', currency: 'USD', tax_status: 'single', monthly_goal: 3000 };
+  showStandalonePage('onboardingPage');
+  showObStep(1);
 }
-
-function showOnboardingStep(step) {
-  document.querySelectorAll('.onboarding-step').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('step' + step);
-  if (el) el.classList.add('active');
-  // update dots
-  document.querySelectorAll('.dot').forEach((d, i) => {
-    d.classList.toggle('active', i + 1 === step);
-    d.classList.toggle('done', i + 1 < step);
+function showObStep(n) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('ob' + n)?.classList.add('active');
+  document.querySelectorAll('.ob-dot').forEach((d, i) => {
+    d.classList.toggle('active', i + 1 === n);
+    d.classList.toggle('done', i + 1 < n);
   });
 }
-
-function togglePlatform(el, platform) {
+function togglePlatform(el, p) {
   el.classList.toggle('selected');
-  if (el.classList.contains('selected')) {
-    if (!onboardingData.platforms.includes(platform)) onboardingData.platforms.push(platform);
-  } else {
-    onboardingData.platforms = onboardingData.platforms.filter(p => p !== platform);
-  }
+  if (el.classList.contains('selected')) { if (!obData.platforms.includes(p)) obData.platforms.push(p); }
+  else obData.platforms = obData.platforms.filter(x => x !== p);
 }
-
-function nextOnboarding(step) {
-  if (step === 2 && onboardingData.platforms.length === 0) {
-    return showToast('Please select at least one platform', 'error');
-  }
-  if (step === 3) {
-    onboardingData.country = document.getElementById('countrySelect').value;
-    onboardingData.currency = document.getElementById('currencySelect').value;
-  }
-  if (step === 4) {
-    onboardingData.tax_status = document.getElementById('taxStatus').value;
-  }
-  onboardingStep = step;
-  showOnboardingStep(step);
+function obNext(step) {
+  if (step === 2 && obData.platforms.length === 0) return toast('Select at least one platform', 'error');
+  if (step === 3) { obData.country = document.getElementById('obCountry').value; obData.currency = document.getElementById('obCurrency').value; }
+  if (step === 4) { obData.tax_status = document.getElementById('obTaxStatus').value; }
+  showObStep(step);
 }
-
-function prevOnboarding(step) {
-  onboardingStep = step;
-  showOnboardingStep(step);
-}
+function obPrev(step) { showObStep(step); }
 
 async function finishOnboarding() {
-  const goalVal = document.getElementById('monthlyGoal').value;
-  onboardingData.monthly_goal = parseFloat(goalVal) || 3000;
-  const btn = document.getElementById('finishOnboardingBtn');
+  const goal = parseFloat(document.getElementById('obGoal').value) || 3000;
+  obData.monthly_goal = goal;
+  const btn = document.getElementById('obFinishBtn');
   setLoading(btn, true, 'Setting up...');
-
-  const profileData = {
-    user_id: currentUser.id,
-    full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
-    country: onboardingData.country,
-    currency: onboardingData.currency,
-    tax_status: onboardingData.tax_status,
-    platforms: onboardingData.platforms,
-    monthly_goal: onboardingData.monthly_goal,
-    onboarding_done: true
-  };
-
-  const { error } = await db.from('profiles').upsert(profileData, { onConflict: 'user_id' });
-  setLoading(btn, false, 'Get Started →');
-  if (error) { showToast('Error saving profile: ' + error.message, 'error'); return; }
-
+  const pd = { user_id: currentUser.id, full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0], country: obData.country, currency: obData.currency, tax_status: obData.tax_status, platforms: obData.platforms, monthly_goal: obData.monthly_goal, onboarding_done: true };
+  const { error } = await db.from('profiles').upsert(pd, { onConflict: 'user_id' });
+  setLoading(btn, false, 'Get Started 🚀');
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
   const { data } = await db.from('profiles').select('*').eq('user_id', currentUser.id).single();
   userProfile = data;
-  showPage('dashboard');
+  showPage('home');
 }
 
-// ── NAVIGATION ────────────────────────────────────────────
+// ── NAVIGATION ────────────────────────────────
+function showStandalonePage(id) {
+  document.getElementById('appShell').classList.remove('visible');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
 function showPage(page) {
-  currentPage = page;
-  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'charts', 'tax', 'profile'];
-  const isAppPage = appPages.includes(page);
+  const standalone = ['auth', 'onboarding'];
+  if (standalone.includes(page)) { showStandalonePage(page + 'Page'); return; }
   const shell = document.getElementById('appShell');
-
-  if (isAppPage) {
-    document.getElementById('authPage').classList.remove('active');
-    document.getElementById('onboardingPage').classList.remove('active');
-    shell.classList.add('visible');
-    document.querySelectorAll('.app-shell .page').forEach(p => p.classList.remove('active'));
-    const el = document.getElementById(page + 'Page');
-    if (el) el.classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navEl = document.querySelector(`.nav-item[onclick*="${page}"]`);
-    if (navEl) navEl.classList.add('active');
-  } else {
-    shell.classList.remove('visible');
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const el = document.getElementById(page + 'Page');
-    if (el) el.classList.add('active');
-  }
-
-  if (page === 'dashboard') loadDashboard();
-  if (page === 'income') loadIncome();
-  if (page === 'expenses') loadExpenses();
-  if (page === 'mileage') loadMileage();
-  if (page === 'charts') loadCharts();
-  if (page === 'tax') loadTaxSummary();
-  if (page === 'profile') loadProfilePage();
+  shell.classList.add('visible');
+  document.querySelectorAll('.app-shell > .page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page + 'Page')?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+  const loaders = { home: loadHome, earnings: loadEarnings, expenses: loadExpenses, reports: loadReports, profile: loadProfilePage };
+  loaders[page]?.();
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────
-let dashPeriod = 'today';
-
-function setDashPeriod(period, el) {
-  dashPeriod = period;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  loadDashboard();
+// ── HOME ──────────────────────────────────────
+function setHomePeriod(p, btn) {
+  homePeriod = p;
+  document.querySelectorAll('.period-pill button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadHome();
 }
 
-async function loadDashboard() {
+async function loadHome() {
   if (!currentUser) return;
-  const name = userProfile?.full_name || currentUser.email.split('@')[0];
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  document.getElementById('dashGreeting').textContent = greeting;
-  document.getElementById('dashName').textContent = name;
+  const name = (userProfile?.full_name || currentUser.email.split('@')[0]).split(' ')[0];
+  const h = new Date().getHours();
+  document.getElementById('homeGreeting').textContent = (h < 12 ? 'Good morning,' : h < 17 ? 'Good afternoon,' : 'Good evening,');
+  document.getElementById('homeName').textContent = name + ' 👋';
 
-  const { start, end } = getDateRange(dashPeriod);
-
-  const [{ data: income }, { data: expenses }] = await Promise.all([
-    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end),
-    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end)
-  ]);
-
-  const gross = (income || []).reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
-  const exp = (expenses || []).reduce((s, r) => s + parseFloat(r.amount), 0);
-  const hours = (income || []).reduce((s, r) => s + parseFloat(r.hours || 0), 0);
-  const country = userProfile?.country || 'US';
-  const taxRate = country === 'CA' ? 0.28 : 0.153;
-  const taxBase = Math.max(0, gross - exp);
-  const tax = taxBase * 0.9235 * taxRate;
-  const profit = gross - exp - tax;
-  const hourly = hours > 0 ? profit / hours : 0;
-
-  document.getElementById('realProfit').textContent = fmt(profit);
-  document.getElementById('grossIncome').textContent = fmt(gross);
-  document.getElementById('totalExpenses').textContent = fmt(exp);
-  document.getElementById('estTax').textContent = fmt(tax);
-  document.getElementById('hoursWorked').textContent = hours > 0 ? `${hours.toFixed(1)}h worked` : '';
-  document.getElementById('hourlyRate').textContent = hours > 0 ? `${fmt(hourly)}/hr` : '';
-
-  // goal progress
-  const goal = userProfile?.monthly_goal || 0;
-  if (goal > 0) {
-    const pct = Math.min(100, (profit / goal) * 100);
-    document.getElementById('goalProgress').style.width = pct + '%';
-    document.getElementById('goalText').textContent = `${Math.round(pct)}% of ${fmt(goal)} monthly goal`;
-  }
-
-  // platform breakdown
-  const byPlatform = {};
-  (income || []).forEach(r => {
-    const p = r.platform;
-    byPlatform[p] = (byPlatform[p] || 0) + parseFloat(r.amount) + parseFloat(r.tips || 0);
-  });
-  const platformHTML = Object.keys(byPlatform).length === 0
-    ? '<p class="empty-state">No income logged yet</p>'
-    : Object.entries(byPlatform).sort((a,b) => b[1]-a[1]).map(([p, amt]) => `
-      <div class="platform-row">
-        <span class="platform-name">${p}</span>
-        <span class="platform-amt">${fmt(amt)}</span>
-      </div>`).join('');
-  document.getElementById('platformBreakdown').innerHTML = platformHTML;
-
-  // recent activity
-  const allActivity = [
-    ...(income || []).map(r => ({ ...r, type: 'income', sortDate: r.date })),
-    ...(expenses || []).map(r => ({ ...r, type: 'expense', sortDate: r.date }))
-  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
-
-  const actHTML = allActivity.length === 0
-    ? '<p class="empty-state">No recent activity. Start by logging your first income! 💰</p>'
-    : allActivity.map(r => `
-      <div class="activity-row">
-        <div class="activity-info">
-          <span class="activity-label">${r.type === 'income' ? r.platform : r.category}</span>
-          <span class="activity-date">${formatDate(r.date)}</span>
-        </div>
-        <span class="activity-amt ${r.type === 'income' ? 'positive' : 'negative'}">
-          ${r.type === 'income' ? '+' : '-'}${fmt(parseFloat(r.amount) + (r.type === 'income' ? parseFloat(r.tips||0) : 0))}
-        </span>
-      </div>`).join('');
-  document.getElementById('recentActivity').innerHTML = actHTML;
-
-  drawChart();
-}
-
-async function drawChart() {
-  const canvas = document.getElementById('earningsChart');
-  if (!canvas) return;
-  const dpr = window.devicePixelRatio || 1;
-  const parent = canvas.parentElement;
-  const actualW = parent ? parent.clientWidth - 32 : 340;
-  const actualH = 160;
-  canvas.width = actualW * dpr;
-  canvas.height = actualH * dpr;
-  canvas.style.width = actualW + 'px';
-  canvas.style.height = actualH + 'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  const W = actualW, H = actualH;
-
-  const days = [], labels = [], incomeData = [], expenseData = [];
-
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    days.push(dateStr);
-    labels.push(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]);
-  }
-
-  const [{ data: income }, { data: expenses }] = await Promise.all([
-    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', days[0]).lte('date', days[6]),
-    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', days[0]).lte('date', days[6])
-  ]);
-
-  days.forEach(d => {
-    const inc = (income||[]).filter(r => r.date === d).reduce((s,r) => s + parseFloat(r.amount) + parseFloat(r.tips||0), 0);
-    const exp = (expenses||[]).filter(r => r.date === d).reduce((s,r) => s + parseFloat(r.amount), 0);
-    incomeData.push(inc);
-    expenseData.push(exp);
-  });
-
-  const maxVal = Math.max(...incomeData, ...expenseData, 1);
-  const padL = 10, padR = 10, padT = 30, padB = 30;
-  const chartW = W - padL - padR;
-  const chartH = H - padT - padB;
-  const barW = (chartW / 7) * 0.35;
-  const gap = (chartW / 7) * 0.05;
-
-  ctx.clearRect(0, 0, W, H);
-
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const { start, end } = getRange(homePeriod);
   const today = new Date().toISOString().split('T')[0];
+  const weekStart = getRange('week').start;
 
-  // grid lines
-  ctx.strokeStyle = gridColor;
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = padT + (chartH / 4) * i;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+  const [{ data: inc }, { data: exp }, { data: weekInc }, { data: weekExp }, { data: todayInc }, { data: todayExp }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end),
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', weekStart).lte('date', today),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', weekStart).lte('date', today),
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).eq('date', today),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).eq('date', today)
+  ]);
+
+  const gross = sum(inc, 'amount') + sum(inc, 'tips');
+  const expenses = sum(exp, 'amount');
+  const taxRate = userProfile?.country === 'CA' ? 0.28 : 0.153;
+  const tax = Math.max(0, gross - expenses) * 0.9235 * taxRate;
+  const profit = gross - expenses - tax;
+
+  set('heroProfit', fmt(profit));
+  set('heroEarnings', fmt(gross));
+  set('heroExpenses', fmt(expenses));
+  set('heroTax', fmt(tax));
+
+  const goal = userProfile?.monthly_goal || 0;
+  const now = new Date();
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const { data: monthInc } = await db.from('gp_income').select('amount,tips').eq('user_id', currentUser.id).gte('date', monthStart);
+  const { data: monthExp } = await db.from('gp_expenses').select('amount').eq('user_id', currentUser.id).gte('date', monthStart);
+  const monthGross = sum(monthInc, 'amount') + sum(monthInc, 'tips');
+  const monthExpenses = sum(monthExp, 'amount');
+  const monthTax = Math.max(0, monthGross - monthExpenses) * 0.9235 * taxRate;
+  const monthProfit = monthGross - monthExpenses - monthTax;
+  const pct = goal > 0 ? Math.min(100, (monthProfit / goal) * 100) : 0;
+  set('goalPct', Math.round(pct) + '% of ' + fmt(goal));
+  document.getElementById('goalFill').style.width = pct + '%';
+  const remaining = Math.max(0, goal - monthProfit);
+  set('homeGoalHint', goal > 0 ? `You're ${fmt(remaining)} away from your monthly goal` : '');
+
+  // Week stats
+  const wGross = sum(weekInc, 'amount') + sum(weekInc, 'tips');
+  const wExp = sum(weekExp, 'amount');
+  const wTax = Math.max(0, wGross - wExp) * 0.9235 * taxRate;
+  set('weekEarn', fmt(wGross)); set('weekExp', fmt(wExp)); set('weekTax', fmt(wTax));
+  set('weekTaxNote', Math.round(taxRate * 100) + '% of earnings');
+
+  // Glance
+  const todayHours = sum(todayInc, 'hours');
+  const todayMiles = sum(todayInc, 'miles');
+  const todayGross = sum(todayInc, 'amount') + sum(todayInc, 'tips');
+  const todayExp2 = sum(todayExp, 'amount');
+  const todayProfit = todayGross - todayExp2 - (Math.max(0, todayGross - todayExp2) * 0.9235 * taxRate);
+  set('glanceHours', todayHours > 0 ? todayHours.toFixed(1) + 'h' : '0h');
+  set('glanceMiles', todayMiles > 0 ? todayMiles.toFixed(0) + ' mi' : '0 mi');
+  set('glanceHourly', todayHours > 0 ? fmt(todayProfit / todayHours) + '/hr' : '$0/hr');
+
+  // Insight
+  generateInsight(inc, weekInc);
+
+  // Recent activity
+  const all = [...(inc || []).map(r => ({ ...r, kind: 'income' })), ...(exp || []).map(r => ({ ...r, kind: 'expense' }))].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+  const ra = document.getElementById('recentActivity');
+  if (all.length === 0) { ra.innerHTML = '<div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>'; return; }
+  ra.innerHTML = all.map(r => {
+    const isInc = r.kind === 'income';
+    const amt = isInc ? parseFloat(r.amount) + parseFloat(r.tips || 0) : parseFloat(r.amount);
+    return `<div class="act-item">
+      <div class="act-icon ${isInc ? 'income' : 'expense'}">${isInc ? '💰' : getCatEmoji(r.category)}</div>
+      <div class="act-info"><div class="act-name">${isInc ? r.platform : r.category}</div><div class="act-type">${isInc ? 'Earnings' : 'Expense'}</div></div>
+      <div class="act-right"><div class="act-amt ${isInc ? 'pos' : 'neg'}">${isInc ? '+' : '-'}${fmt(amt)}</div><div class="act-time">${formatDate(r.date)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function generateInsight(inc, weekInc) {
+  const msgs = [];
+  if (!inc || inc.length === 0) { set('insightMsg', 'Log income to see your personalized insights.'); return; }
+  const total = sum(inc, 'amount') + sum(inc, 'tips');
+  if (total > 0) msgs.push(`You earned ${fmt(total)} in the selected period. Keep it up!`);
+  const platforms = {};
+  (weekInc || []).forEach(r => { platforms[r.platform] = (platforms[r.platform] || 0) + parseFloat(r.amount) + parseFloat(r.tips || 0); });
+  const top = Object.entries(platforms).sort((a,b) => b[1]-a[1])[0];
+  if (top) msgs.push(`${top[0]} is your top platform this week with ${fmt(top[1])}.`);
+  set('insightMsg', msgs[Math.floor(Math.random() * msgs.length)] || 'Keep logging to see insights!');
+}
+
+// ── EARNINGS ──────────────────────────────────
+function setEarnFilter(f, btn) {
+  earnFilter = f;
+  document.querySelectorAll('#earningsPage .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadEarnings();
+}
+
+async function loadEarnings() {
+  if (!currentUser) return;
+  const { start, end } = getRange(earnFilter);
+  const { data: inc } = await db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end).order('date', { ascending: false });
+
+  const total = sum(inc, 'amount') + sum(inc, 'tips');
+  set('earnTotal', fmt(total));
+
+  // Platform breakdown
+  const byPlat = {};
+  (inc || []).forEach(r => { const p = r.platform; byPlat[p] = (byPlat[p] || 0) + parseFloat(r.amount) + parseFloat(r.tips || 0); });
+  const platColors = ['#00d4aa','#3b82f6','#fbbf24','#f87171','#a78bfa','#34d399','#fb923c'];
+  const platEntries = Object.entries(byPlat).sort((a,b) => b[1]-a[1]);
+  const pl = document.getElementById('platformList');
+  if (platEntries.length === 0) { pl.innerHTML = '<div class="empty-wrap"><p>No earnings in this period</p></div>'; }
+  else pl.innerHTML = platEntries.map(([p, amt], i) => {
+    const pct = total > 0 ? Math.round((amt / total) * 100) : 0;
+    return `<div class="plat-item">
+      <div class="plat-dot" style="background:${platColors[i%platColors.length]}"></div>
+      <div class="plat-info"><div class="plat-name">${p}</div><div class="plat-bar-wrap"><div class="plat-bar" style="width:${pct}%;background:${platColors[i%platColors.length]}"></div></div></div>
+      <div class="plat-right"><div class="plat-amt">${fmt(amt)}</div><div class="plat-pct">${pct}%</div></div>
+    </div>`;
+  }).join('');
+
+  // Chart
+  drawEarnChart(inc || [], start, end, earnFilter);
+
+  // History
+  const hl = document.getElementById('historyList');
+  if (!inc || inc.length === 0) { hl.innerHTML = ''; return; }
+  const byDate = {};
+  inc.forEach(r => { byDate[r.date] = byDate[r.date] || { amt: 0, platforms: new Set() }; byDate[r.date].amt += parseFloat(r.amount) + parseFloat(r.tips || 0); byDate[r.date].platforms.add(r.platform); });
+  const sorted = Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 10);
+  hl.innerHTML = sorted.map(([date, d]) => `
+    <div class="hist-item">
+      <div><div class="hist-date">${formatDateLong(date)}</div><div class="hist-platforms">${[...d.platforms].join(', ')}</div></div>
+      <div class="hist-amt">${fmt(d.amt)}</div>
+    </div>`).join('');
+}
+
+function drawEarnChart(inc, start, end, period) {
+  const canvas = document.getElementById('earnChart');
+  if (!canvas) return;
+  setupCanvas(canvas, 180);
+  const ctx = canvas.getContext('2d');
+  const W = parseInt(canvas.style.width), H = 180;
+  const padL = 8, padR = 8, padT = 20, padB = 28, cW = W-padL-padR, cH = H-padT-padB;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+  const labels = [], data = [];
+  if (period === 'day') {
+    // Hours 6am-10pm
+    for (let h = 6; h <= 22; h += 2) { labels.push(h < 12 ? h+'am' : h===12 ? '12pm' : (h-12)+'pm'); data.push(0); }
+    inc.forEach(r => { const hr = new Date(r.date + 'T12:00:00').getHours(); const i = Math.floor((hr-6)/2); if(i>=0&&i<data.length) data[i] += parseFloat(r.amount)+parseFloat(r.tips||0); });
+  } else if (period === 'week') {
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const startD = new Date(start+'T00:00:00');
+    for (let i = 0; i < 7; i++) { const d = new Date(startD); d.setDate(d.getDate()+i); labels.push(days[d.getDay()]); data.push(0); }
+    inc.forEach(r => { const d = new Date(r.date+'T00:00:00'); const i = Math.round((d-startD)/(86400000)); if(i>=0&&i<7) data[i] += parseFloat(r.amount)+parseFloat(r.tips||0); });
+  } else if (period === 'month') {
+    const now = new Date(); const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d += 3) { labels.push(d+''); data.push(0); }
+    inc.forEach(r => { const day = parseInt(r.date.split('-')[2]); const i = Math.floor((day-1)/3); if(i<data.length) data[i] += parseFloat(r.amount)+parseFloat(r.tips||0); });
+  } else {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    months.forEach(m => { labels.push(m); data.push(0); });
+    inc.forEach(r => { const m = parseInt(r.date.split('-')[1])-1; data[m] += parseFloat(r.amount)+parseFloat(r.tips||0); });
   }
 
-  days.forEach((d, i) => {
-    const x = padL + (chartW / 7) * i + (chartW / 7) * 0.15;
-    const isToday = d === today;
+  const maxVal = Math.max(...data, 1);
+  ctx.clearRect(0, 0, W, H);
+  const textColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)';
+  const n = labels.length;
+  const barW = (cW / n) * 0.55;
+  const barGap = cW / n;
 
-    // income bar
-    const incH = (incomeData[i] / maxVal) * chartH;
-    const incGrad = ctx.createLinearGradient(0, padT + chartH - incH, 0, padT + chartH);
-    incGrad.addColorStop(0, isToday ? '#00d4aa' : 'rgba(0,212,170,0.7)');
-    incGrad.addColorStop(1, isToday ? 'rgba(0,212,170,0.3)' : 'rgba(0,212,170,0.2)');
-    ctx.fillStyle = incGrad;
-    ctx.beginPath();
-    ctx.roundRect(x, padT + chartH - incH, barW, incH, 4);
-    ctx.fill();
-
-    // expense bar
-    const expH = (expenseData[i] / maxVal) * chartH;
-    if (expH > 0) {
-      ctx.fillStyle = 'rgba(255,99,99,0.6)';
-      ctx.beginPath();
-      ctx.roundRect(x + barW + gap, padT + chartH - expH, barW, expH, 4);
-      ctx.fill();
-    }
-
-    // value label
-    if (incomeData[i] > 0) {
-      ctx.fillStyle = '#00d4aa';
-      ctx.font = `bold 10px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('$' + Math.round(incomeData[i]), x + barW / 2, padT + chartH - incH - 5);
-    }
-
-    // day label
-    ctx.fillStyle = isToday ? '#00d4aa' : textColor;
-    ctx.font = isToday ? 'bold 11px sans-serif' : '11px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(labels[i], x + barW / 2, H - 8);
+  data.forEach((val, i) => {
+    const x = padL + barGap * i + (barGap - barW) / 2;
+    const bh = Math.max((val / maxVal) * cH, val > 0 ? 3 : 0);
+    const grad = ctx.createLinearGradient(0, padT+cH-bh, 0, padT+cH);
+    grad.addColorStop(0, '#00d4aa'); grad.addColorStop(1, 'rgba(0,212,170,0.2)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.roundRect(x, padT+cH-bh, barW, Math.max(bh,1), 4); ctx.fill();
+    ctx.fillStyle = textColor; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x + barW/2, H-8);
   });
 }
 
-// ── INCOME ────────────────────────────────────────────────
-async function loadIncome() {
+// ── EXPENSES ──────────────────────────────────
+function setExpFilter(f, btn) {
+  expFilter = f;
+  document.querySelectorAll('#expensesPage .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadExpenses();
+}
+
+async function loadExpenses() {
   if (!currentUser) return;
-  const list = document.getElementById('incomeList');
-  list.innerHTML = '<p class="empty-state loading">Loading...</p>';
+  const { start, end } = getRange(expFilter);
+  const { data: exp } = await db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end).order('date', { ascending: false });
 
-  const { data } = await db.from('gp_income').select('*').eq('user_id', currentUser.id).order('date', { ascending: false });
+  const total = sum(exp, 'amount');
+  set('expTotal', fmt(total));
 
-  if (!data || data.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state-card">
-        <div class="empty-icon">💰</div>
-        <h3>No income yet</h3>
-        <p>Tap the + button to log your first earnings</p>
-      </div>`;
-    return;
-  }
+  drawExpChart(exp || []);
 
-  list.innerHTML = data.map(r => `
-    <div class="entry-card">
-      <div class="entry-main">
-        <div class="entry-info">
-          <span class="entry-platform">${r.platform}</span>
-          <span class="entry-date">${formatDate(r.date)}</span>
-          ${r.hours ? `<span class="entry-meta">⏱ ${r.hours}h</span>` : ''}
-          ${r.miles ? `<span class="entry-meta">🚗 ${r.miles}mi</span>` : ''}
-          ${r.notes ? `<span class="entry-notes">${r.notes}</span>` : ''}
-        </div>
-        <div class="entry-amounts">
-          <span class="entry-amount">${fmt(parseFloat(r.amount))}</span>
-          ${r.tips > 0 ? `<span class="entry-tips">+${fmt(parseFloat(r.tips))} tips</span>` : ''}
-        </div>
+  const el = document.getElementById('expenseList');
+  if (!exp || exp.length === 0) { el.innerHTML = '<div class="empty-wrap"><div class="empty-icon">📋</div><h3>No expenses yet</h3><p>Track gas, repairs, and more</p></div>'; return; }
+  el.innerHTML = exp.map(r => `
+    <div class="entry-item">
+      <div class="entry-icon exp">${getCatEmoji(r.category)}</div>
+      <div class="entry-info">
+        <div class="entry-name">${r.category}</div>
+        <div class="entry-meta">${formatDate(r.date)}${r.notes ? ' · ' + r.notes : ''}${r.is_deductible ? ' · Deductible' : ''}</div>
+      </div>
+      <div class="entry-right">
+        <div class="entry-amt neg">-${fmt(parseFloat(r.amount))}</div>
       </div>
       <div class="entry-actions">
-        <button class="btn-edit" onclick="editIncome('${r.id}')">✏️ Edit</button>
-        <button class="btn-delete" onclick="deleteIncome('${r.id}')">🗑️ Delete</button>
+        <button class="entry-edit" onclick="editExpense('${r.id}')">✏️</button>
+        <button class="entry-del" onclick="deleteExpense('${r.id}')">🗑</button>
       </div>
     </div>`).join('');
 }
 
+function drawExpChart(expenses) {
+  const canvas = document.getElementById('expChart');
+  if (!canvas) return;
+  setupCanvas(canvas, 160);
+  const ctx = canvas.getContext('2d');
+  const W = parseInt(canvas.style.width), H = 160;
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const cx = W * 0.35, cy = H/2, R = Math.min(cx, cy) * 0.82, r = R * 0.55;
+
+  const byCategory = {};
+  expenses.forEach(e => { byCategory[e.category] = (byCategory[e.category] || 0) + parseFloat(e.amount); });
+  const entries = Object.entries(byCategory).sort((a,b) => b[1]-a[1]);
+  const total = entries.reduce((s,[,v]) => s+v, 0);
+  const colors = ['#f87171','#fbbf24','#fb923c','#f472b6','#a78bfa','#60a5fa','#34d399','#94a3b8'];
+
+  ctx.clearRect(0, 0, W, H);
+  if (total === 0) {
+    const tc = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+    ctx.fillStyle = tc; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('No expenses', cx, cy); return;
+  }
+
+  let angle = -Math.PI/2;
+  entries.forEach(([,val], i) => {
+    const slice = (val/total) * Math.PI*2;
+    ctx.fillStyle = colors[i%colors.length];
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,angle,angle+slice); ctx.closePath(); ctx.fill();
+    angle += slice;
+  });
+  ctx.fillStyle = isDark ? '#0f1625' : '#ffffff';
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#f87171'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(fmt(total), cx, cy-3);
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+  ctx.font = '9px sans-serif'; ctx.fillText('total', cx, cy+11);
+
+  const lx = W*0.67, ly0 = cy - (Math.min(entries.length,5)*18)/2;
+  entries.slice(0,5).forEach(([cat, val], i) => {
+    const y = ly0 + i*20;
+    ctx.fillStyle = colors[i%colors.length]; ctx.fillRect(lx-18, y-6, 8, 8);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.7)';
+    ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(cat.length > 9 ? cat.slice(0,9)+'…' : cat, lx-7, y+3);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+    ctx.fillText(Math.round((val/total)*100)+'%', lx-7, y+13);
+  });
+}
+
+// ── INCOME CRUD ───────────────────────────────
 function showAddIncome() {
   editingId = null;
   document.getElementById('incomeModalTitle').textContent = 'Log Income';
   document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('incomePlatform').value = userProfile?.platforms?.[0] || 'Uber';
-  document.getElementById('incomeAmount').value = '';
-  document.getElementById('incomeTips').value = '';
-  document.getElementById('incomeHours').value = '';
-  document.getElementById('incomeMiles').value = '';
-  document.getElementById('incomeNotes').value = '';
+  ['incomeAmount','incomeTips','incomeHours','incomeMiles','incomeNotes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('incomeModal').classList.add('active');
 }
 
@@ -464,98 +441,44 @@ async function editIncome(id) {
   if (!data) return;
   editingId = id;
   document.getElementById('incomeModalTitle').textContent = 'Edit Income';
-  document.getElementById('incomeDate').value = data.date;
   document.getElementById('incomePlatform').value = data.platform;
   document.getElementById('incomeAmount').value = data.amount;
   document.getElementById('incomeTips').value = data.tips || '';
   document.getElementById('incomeHours').value = data.hours || '';
   document.getElementById('incomeMiles').value = data.miles || '';
+  document.getElementById('incomeDate').value = data.date;
   document.getElementById('incomeNotes').value = data.notes || '';
   document.getElementById('incomeModal').classList.add('active');
 }
 
 async function deleteIncome(id) {
-  if (!confirm('Delete this income entry?')) return;
-  const { error } = await db.from('gp_income').delete().eq('id', id);
-  if (error) showToast('Error deleting entry', 'error');
-  else { showToast('Entry deleted', 'success'); loadIncome(); }
+  if (!confirm('Delete this entry?')) return;
+  await db.from('gp_income').delete().eq('id', id);
+  toast('Deleted', 'success'); loadEarnings();
 }
 
 async function saveIncome() {
   const btn = document.getElementById('saveIncomeBtn');
-  const platform = document.getElementById('incomePlatform').value;
   const amount = parseFloat(document.getElementById('incomeAmount').value);
-  const tips = parseFloat(document.getElementById('incomeTips').value) || 0;
-  const hours = parseFloat(document.getElementById('incomeHours').value) || null;
-  const miles = parseFloat(document.getElementById('incomeMiles').value) || null;
   const date = document.getElementById('incomeDate').value;
-  const notes = document.getElementById('incomeNotes').value.trim();
-
-  if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
-  if (!date) return showToast('Please select a date', 'error');
-
+  if (!amount || amount <= 0) return toast('Enter a valid amount', 'error');
+  if (!date) return toast('Select a date', 'error');
   setLoading(btn, true, 'Saving...');
-
-  const record = { user_id: currentUser.id, platform, amount, tips, hours, miles, date, notes };
-  let error;
-  if (editingId) {
-    ({ error } = await db.from('gp_income').update(record).eq('id', editingId));
-  } else {
-    ({ error } = await db.from('gp_income').insert(record));
-  }
-
+  const rec = { user_id: currentUser.id, platform: document.getElementById('incomePlatform').value, amount, tips: parseFloat(document.getElementById('incomeTips').value)||0, hours: parseFloat(document.getElementById('incomeHours').value)||null, miles: parseFloat(document.getElementById('incomeMiles').value)||null, date, notes: document.getElementById('incomeNotes').value.trim() };
+  const { error } = editingId ? await db.from('gp_income').update(rec).eq('id', editingId) : await db.from('gp_income').insert(rec);
   setLoading(btn, false, 'Save');
-  if (error) { showToast('Error saving: ' + error.message, 'error'); return; }
-  showToast(editingId ? 'Income updated!' : 'Income saved!', 'success');
-  closeModal('incomeModal');
-  loadIncome();
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(editingId ? 'Updated!' : 'Saved!', 'success');
+  closeModal('incomeModal'); loadEarnings();
 }
 
-// ── EXPENSES ──────────────────────────────────────────────
-async function loadExpenses() {
-  if (!currentUser) return;
-  const list = document.getElementById('expenseList');
-  list.innerHTML = '<p class="empty-state loading">Loading...</p>';
-
-  const { data } = await db.from('gp_expenses').select('*').eq('user_id', currentUser.id).order('date', { ascending: false });
-
-  if (!data || data.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state-card">
-        <div class="empty-icon">📋</div>
-        <h3>No expenses yet</h3>
-        <p>Track gas, repairs, insurance and more to calculate your real profit</p>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = data.map(r => `
-    <div class="entry-card">
-      <div class="entry-main">
-        <div class="entry-info">
-          <span class="entry-platform">${r.category}</span>
-          <span class="entry-date">${formatDate(r.date)}</span>
-          ${r.is_deductible ? '<span class="entry-badge">Tax deductible</span>' : ''}
-          ${r.notes ? `<span class="entry-notes">${r.notes}</span>` : ''}
-        </div>
-        <div class="entry-amounts">
-          <span class="entry-amount negative">${fmt(parseFloat(r.amount))}</span>
-        </div>
-      </div>
-      <div class="entry-actions">
-        <button class="btn-edit" onclick="editExpense('${r.id}')">✏️ Edit</button>
-        <button class="btn-delete" onclick="deleteExpense('${r.id}')">🗑️ Delete</button>
-      </div>
-    </div>`).join('');
-}
-
+// ── EXPENSE CRUD ──────────────────────────────
 function showAddExpense() {
   editingId = null;
   document.getElementById('expenseModalTitle').textContent = 'Add Expense';
   document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('expenseCategory').value = 'Gas';
-  document.getElementById('expenseAmount').value = '';
-  document.getElementById('expenseNotes').value = '';
+  ['expenseAmount','expenseNotes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('expenseDeductible').checked = true;
   document.getElementById('expenseModal').classList.add('active');
 }
@@ -565,9 +488,9 @@ async function editExpense(id) {
   if (!data) return;
   editingId = id;
   document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
-  document.getElementById('expenseDate').value = data.date;
   document.getElementById('expenseCategory').value = data.category;
   document.getElementById('expenseAmount').value = data.amount;
+  document.getElementById('expenseDate').value = data.date;
   document.getElementById('expenseNotes').value = data.notes || '';
   document.getElementById('expenseDeductible').checked = data.is_deductible;
   document.getElementById('expenseModal').classList.add('active');
@@ -575,920 +498,258 @@ async function editExpense(id) {
 
 async function deleteExpense(id) {
   if (!confirm('Delete this expense?')) return;
-  const { error } = await db.from('gp_expenses').delete().eq('id', id);
-  if (error) showToast('Error deleting entry', 'error');
-  else { showToast('Expense deleted', 'success'); loadExpenses(); }
+  await db.from('gp_expenses').delete().eq('id', id);
+  toast('Deleted', 'success'); loadExpenses();
 }
 
 async function saveExpense() {
   const btn = document.getElementById('saveExpenseBtn');
-  const category = document.getElementById('expenseCategory').value;
   const amount = parseFloat(document.getElementById('expenseAmount').value);
   const date = document.getElementById('expenseDate').value;
-  const notes = document.getElementById('expenseNotes').value.trim();
-  const is_deductible = document.getElementById('expenseDeductible').checked;
-
-  if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
-  if (!date) return showToast('Please select a date', 'error');
-
+  if (!amount || amount <= 0) return toast('Enter a valid amount', 'error');
   setLoading(btn, true, 'Saving...');
-  const record = { user_id: currentUser.id, category, amount, date, notes, is_deductible };
-  let error;
-  if (editingId) {
-    ({ error } = await db.from('gp_expenses').update(record).eq('id', editingId));
-  } else {
-    ({ error } = await db.from('gp_expenses').insert(record));
-  }
-
+  const rec = { user_id: currentUser.id, category: document.getElementById('expenseCategory').value, amount, date, notes: document.getElementById('expenseNotes').value.trim(), is_deductible: document.getElementById('expenseDeductible').checked };
+  const { error } = editingId ? await db.from('gp_expenses').update(rec).eq('id', editingId) : await db.from('gp_expenses').insert(rec);
   setLoading(btn, false, 'Save');
-  if (error) { showToast('Error saving: ' + error.message, 'error'); return; }
-  showToast(editingId ? 'Expense updated!' : 'Expense saved!', 'success');
-  closeModal('expenseModal');
-  loadExpenses();
+  if (error) { toast('Error: ' + error.message, 'error'); return; }
+  toast(editingId ? 'Updated!' : 'Saved!', 'success');
+  closeModal('expenseModal'); loadExpenses();
 }
 
-// ── MILEAGE ───────────────────────────────────────────────
-async function loadMileage() {
-  if (!currentUser) return;
-  const country = userProfile?.country || 'US';
-  const rate = country === 'CA' ? 0.70 : 0.70;
-  const rateLabel = country === 'CA' ? '$0.70/km (CRA 2026)' : '$0.70/mile (IRS 2026)';
-  const unit = country === 'CA' ? 'km' : 'mi';
-  const year = new Date().getFullYear();
-
-  document.getElementById('irsRate').textContent = rateLabel;
-  document.getElementById('mileageYear').textContent = year;
-
-  // this month
+// ── REPORTS ───────────────────────────────────
+function initReportMonths() {
+  const sel = document.getElementById('reportMonth');
+  if (!sel) return;
   const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-  const monthEnd = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().split('T')[0];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const opt = document.createElement('option');
+    opt.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    opt.textContent = `${months[d.getMonth()]} ${d.getFullYear()}`;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
 
-  const [{ data: monthData }, { data: yearData }] = await Promise.all([
-    db.from('gp_income').select('miles, date, platform, amount').eq('user_id', currentUser.id).gte('date', monthStart).lte('date', monthEnd).not('miles', 'is', null),
-    db.from('gp_income').select('miles, date, platform').eq('user_id', currentUser.id).gte('date', `${year}-01-01`).not('miles', 'is', null)
+async function loadReports() {
+  if (!currentUser) return;
+  const sel = document.getElementById('reportMonth');
+  const [year, month] = (sel?.value || new Date().toISOString().slice(0,7)).split('-').map(Number);
+  const start = `${year}-${String(month).padStart(2,'0')}-01`;
+  const end = new Date(year, month, 0).toISOString().split('T')[0];
+
+  const [{ data: inc }, { data: exp }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', start).lte('date', end)
   ]);
 
-  const monthMiles = (monthData||[]).reduce((s,r) => s + parseFloat(r.miles||0), 0);
-  const yearMiles = (yearData||[]).reduce((s,r) => s + parseFloat(r.miles||0), 0);
-  const monthDeduction = monthMiles * rate;
-  const yearDeduction = yearMiles * rate;
-
-  document.getElementById('monthMiles').textContent = monthMiles.toFixed(1);
-  document.getElementById('monthUnit').textContent = unit;
-  document.getElementById('monthDeduction').textContent = fmt(monthDeduction);
-  document.getElementById('yearMiles').textContent = yearMiles.toFixed(1) + ' ' + unit;
-  document.getElementById('yearDeduction').textContent = fmt(yearDeduction);
-
-  // trips list
-  const list = document.getElementById('tripsList');
-  if (!monthData || monthData.length === 0) {
-    list.innerHTML = `
-      <div class="empty-state-card">
-        <div class="empty-icon">🚗</div>
-        <h3>No mileage logged this month</h3>
-        <p>When you log income, add the miles you drove to track your tax deduction</p>
-      </div>`;
-    return;
-  }
-
-  list.innerHTML = monthData.sort((a,b) => new Date(b.date)-new Date(a.date)).map(r => `
-    <div class="trip-row">
-      <div class="trip-info">
-        <span class="trip-platform">${r.platform}</span>
-        <span class="trip-date">${formatDate(r.date)}</span>
-      </div>
-      <div class="trip-amounts">
-        <span class="trip-miles">${parseFloat(r.miles).toFixed(1)} ${unit}</span>
-        <span class="trip-deduction">~${fmt(parseFloat(r.miles) * rate)} est. deduction</span>
-      </div>
-    </div>`).join('');
-}
-
-// ── PROFILE PAGE ──────────────────────────────────────────
-async function loadProfilePage() {
-  if (!userProfile) return;
-  document.getElementById('profileName').textContent = userProfile.full_name || 'Driver';
-  document.getElementById('profileEmail').textContent = currentUser.email;
-  document.getElementById('profileCountry').textContent = userProfile.country === 'CA' ? '🇨🇦 Canada' : '🇺🇸 United States';
-  document.getElementById('profileCurrency').textContent = userProfile.currency || 'USD';
-  document.getElementById('profileGoal').textContent = fmt(userProfile.monthly_goal || 0);
-  document.getElementById('profilePlatforms').textContent = (userProfile.platforms || []).join(', ') || 'None set';
-}
-
-// ── HELPERS ───────────────────────────────────────────────
-function getDateRange(period) {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  if (period === 'today') return { start: today, end: today };
-  if (period === 'week') {
-    const day = now.getDay();
-    const mon = new Date(now); mon.setDate(now.getDate() - day + (day === 0 ? -6 : 1));
-    return { start: mon.toISOString().split('T')[0], end: today };
-  }
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-  return { start: monthStart, end: today };
-}
-
-function fmt(n) {
-  const num = parseFloat(n) || 0;
-  return '$' + Math.abs(num).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-  editingId = null;
-}
-
-function setLoading(btn, loading, text) {
-  if (!btn) return;
-  btn.disabled = loading;
-  btn.textContent = loading ? text : btn.dataset.label || text;
-  if (!loading && !btn.dataset.label) btn.dataset.label = text;
-}
-
-function showToast(msg, type = 'success') {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.classList.add('show'), 10);
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
-}
-
-// ── EXPORT ────────────────────────────────────────────────
-
-async function exportData(type) {
-  if (!currentUser) return;
-  showToast('Preparing export...', 'success');
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  // Fetch all data for current year
-  const [{ data: income }, { data: expenses }] = await Promise.all([
-    db.from('gp_income').select('*').eq('user_id', currentUser.id)
-      .gte('date', `${year}-01-01`).order('date', { ascending: false }),
-    db.from('gp_expenses').select('*').eq('user_id', currentUser.id)
-      .gte('date', `${year}-01-01`).order('date', { ascending: false })
-  ]);
-
-  if (type === 'csv') exportCSV(income || [], expenses || [], year);
-  if (type === 'pdf') exportPDF(income || [], expenses || [], year);
-}
-
-function exportCSV(income, expenses, year) {
-  // Income CSV
-  const incomeRows = [
-    ['Date', 'Platform', 'Earnings', 'Tips', 'Total', 'Hours', 'Miles', 'Notes'],
-    ...income.map(r => [
-      r.date, r.platform,
-      parseFloat(r.amount).toFixed(2),
-      parseFloat(r.tips || 0).toFixed(2),
-      (parseFloat(r.amount) + parseFloat(r.tips || 0)).toFixed(2),
-      r.hours || '', r.miles || '', r.notes || ''
-    ])
-  ];
-
-  // Expense CSV
-  const expenseRows = [
-    ['Date', 'Category', 'Amount', 'Tax Deductible', 'Notes'],
-    ...expenses.map(r => [
-      r.date, r.category,
-      parseFloat(r.amount).toFixed(2),
-      r.is_deductible ? 'Yes' : 'No',
-      r.notes || ''
-    ])
-  ];
-
-  const totalIncome = income.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
-  const totalExpenses = expenses.reduce((s, r) => s + parseFloat(r.amount), 0);
-  const totalMiles = income.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
-  const mileageDeduction = totalMiles * 0.70;
-  const netProfit = totalIncome - totalExpenses;
-
-  const summaryRows = [
-    ['SUMMARY', ''],
-    ['Total Income', totalIncome.toFixed(2)],
-    ['Total Expenses', totalExpenses.toFixed(2)],
-    ['Total Miles', totalMiles.toFixed(1)],
-    ['Mileage Deduction', mileageDeduction.toFixed(2)],
-    ['Net Profit', netProfit.toFixed(2)],
-    ['Est. Self-Employment Tax (15.3%)', (netProfit * 0.9235 * 0.153).toFixed(2)]
-  ];
-
-  const csvContent = [
-    [`GIGPROFIT TAX REPORT - ${year}`],
-    [],
-    ['=== INCOME ==='],
-    ...incomeRows,
-    [],
-    ['=== EXPENSES ==='],
-    ...expenseRows,
-    [],
-    ['=== SUMMARY ==='],
-    ...summaryRows
-  ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-
-  downloadFile(`GigProfit-${year}-Tax-Report.csv`, csvContent, 'text/csv');
-  showToast('CSV exported!', 'success');
-}
-
-function exportPDF(income, expenses, year) {
-  const totalIncome = income.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
-  const totalExpenses = expenses.reduce((s, r) => s + parseFloat(r.amount), 0);
-  const totalMiles = income.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
-  const mileageDeduction = totalMiles * 0.70;
-  const netProfit = totalIncome - totalExpenses;
+  const gross = sum(inc, 'amount') + sum(inc, 'tips');
+  const expenses = sum(exp, 'amount');
+  const miles = sum(inc, 'miles');
+  const mileDeduct = miles * 0.70;
   const taxRate = userProfile?.country === 'CA' ? 0.28 : 0.153;
-  const estTax = netProfit * 0.9235 * taxRate;
-  const name = userProfile?.full_name || currentUser.email;
-  const country = userProfile?.country === 'CA' ? 'Canada' : 'USA';
+  const tax = Math.max(0, gross - expenses) * 0.9235 * taxRate;
+  const net = gross - expenses - tax;
 
-  // Group income by platform
-  const byPlatform = {};
-  income.forEach(r => {
-    const p = r.platform;
-    if (!byPlatform[p]) byPlatform[p] = { amount: 0, tips: 0, miles: 0, hours: 0 };
-    byPlatform[p].amount += parseFloat(r.amount);
-    byPlatform[p].tips += parseFloat(r.tips || 0);
-    byPlatform[p].miles += parseFloat(r.miles || 0);
-    byPlatform[p].hours += parseFloat(r.hours || 0);
-  });
+  set('roNet', fmt(net));
+  set('roEarn', fmt(gross));
+  set('roExp', fmt(expenses));
+  set('roTax', fmt(tax));
+  set('roMiles', fmt(mileDeduct));
 
-  // Group expenses by category
-  const byCategory = {};
-  expenses.forEach(r => {
-    byCategory[r.category] = (byCategory[r.category] || 0) + parseFloat(r.amount);
-  });
-
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>GigProfit Tax Report ${year}</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; font-size: 12px; color: #1a1a1a; padding: 32px; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 3px solid #00d4aa; }
-  .logo { font-size: 22px; font-weight: 800; color: #00d4aa; }
-  .report-title { font-size: 14px; color: #666; margin-top: 4px; }
-  .meta { text-align: right; font-size: 11px; color: #666; }
-  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
-  .summary-card { background: #f8f9fa; border-radius: 8px; padding: 14px; border-left: 4px solid #00d4aa; }
-  .summary-card.red { border-left-color: #ff4d4d; }
-  .summary-card.yellow { border-left-color: #ffa500; }
-  .summary-card.blue { border-left-color: #0066ff; }
-  .card-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .card-value { font-size: 18px; font-weight: 800; color: #1a1a1a; }
-  .section { margin-bottom: 24px; }
-  .section-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #e0e0e0; text-transform: uppercase; letter-spacing: 0.05em; }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 700; color: #555; }
-  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
-  tr:last-child td { border-bottom: none; }
-  .amount { text-align: right; font-weight: 600; }
-  .positive { color: #00a87a; }
-  .negative { color: #cc3333; }
-  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #999; text-align: center; }
-  .disclaimer { background: #fff8e6; border: 1px solid #ffd980; border-radius: 6px; padding: 10px 14px; margin-top: 16px; font-size: 10px; color: #7a5c00; }
-</style>
-</head>
-<body>
-<div class="header">
-  <div>
-    <div class="logo">GigProfit</div>
-    <div class="report-title">Tax Summary Report — ${year}</div>
-  </div>
-  <div class="meta">
-    <div><strong>${name}</strong></div>
-    <div>${country}</div>
-    <div>Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-  </div>
-</div>
-
-<div class="summary-grid">
-  <div class="summary-card">
-    <div class="card-label">Total Income</div>
-    <div class="card-value positive">$${totalIncome.toFixed(2)}</div>
-  </div>
-  <div class="summary-card red">
-    <div class="card-label">Total Expenses</div>
-    <div class="card-value negative">$${totalExpenses.toFixed(2)}</div>
-  </div>
-  <div class="summary-card">
-    <div class="card-label">Net Profit</div>
-    <div class="card-value">$${netProfit.toFixed(2)}</div>
-  </div>
-  <div class="summary-card blue">
-    <div class="card-label">Total Miles</div>
-    <div class="card-value">${totalMiles.toFixed(1)} mi</div>
-  </div>
-  <div class="summary-card blue">
-    <div class="card-label">Mileage Deduction</div>
-    <div class="card-value">$${mileageDeduction.toFixed(2)}</div>
-  </div>
-  <div class="summary-card yellow">
-    <div class="card-label">Est. Tax Owed</div>
-    <div class="card-value">$${estTax.toFixed(2)}</div>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-title">Income by Platform</div>
-  <table>
-    <tr><th>Platform</th><th>Earnings</th><th>Tips</th><th>Hours</th><th>Miles</th><th class="amount">Total</th></tr>
-    ${Object.entries(byPlatform).map(([p, d]) => `
-    <tr>
-      <td>${p}</td>
-      <td>$${d.amount.toFixed(2)}</td>
-      <td>$${d.tips.toFixed(2)}</td>
-      <td>${d.hours.toFixed(1)}h</td>
-      <td>${d.miles.toFixed(1)}</td>
-      <td class="amount positive">$${(d.amount + d.tips).toFixed(2)}</td>
-    </tr>`).join('')}
-    <tr style="font-weight:700;background:#f8f9fa">
-      <td>TOTAL</td><td colspan="4"></td>
-      <td class="amount positive">$${totalIncome.toFixed(2)}</td>
-    </tr>
-  </table>
-</div>
-
-<div class="section">
-  <div class="section-title">Expenses by Category</div>
-  <table>
-    <tr><th>Category</th><th class="amount">Amount</th></tr>
-    ${Object.entries(byCategory).map(([cat, amt]) => `
-    <tr><td>${cat}</td><td class="amount negative">$${amt.toFixed(2)}</td></tr>
-    `).join('')}
-    <tr style="font-weight:700;background:#f8f9fa">
-      <td>TOTAL</td>
-      <td class="amount negative">$${totalExpenses.toFixed(2)}</td>
-    </tr>
-  </table>
-</div>
-
-<div class="disclaimer">
-  ⚠️ <strong>Disclaimer:</strong> This report is for informational purposes only and does not constitute tax advice. Tax estimates are approximations. Please consult a qualified tax professional for your specific situation.
-</div>
-
-<div class="footer">
-  Generated by GigProfit — gigprofitapp.github.io/GigProfit | ${new Date().getFullYear()}
-</div>
-</body>
-</html>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => { win.print(); }, 500);
-  showToast('PDF report opened — use Print to save as PDF', 'success');
+  loadQuarterlyTax(year, taxRate);
 }
 
-function downloadFile(filename, content, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ── EXPORT MODAL ──────────────────────────────────────────
-
-function showExportModal() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-
-  // Set defaults
-  document.getElementById('exportDateFrom').value = `${year}-01-01`;
-  document.getElementById('exportDateTo').value = `${year}-${month}-${String(now.getDate()).padStart(2,'0')}`;
-  document.getElementById('exportModal').classList.add('active');
-}
-
-async function runExport() {
-  const format = document.querySelector('input[name="exportFormat"]:checked')?.value || 'pdf';
-  const dataType = document.querySelector('input[name="exportData"]:checked')?.value || 'all';
-  const dateFrom = document.getElementById('exportDateFrom').value;
-  const dateTo = document.getElementById('exportDateTo').value;
-  const btn = document.getElementById('runExportBtn');
-
-  if (!dateFrom || !dateTo) return showToast('Please select a date range', 'error');
-  if (dateFrom > dateTo) return showToast('Start date must be before end date', 'error');
-
-  setLoading(btn, true, 'Preparing...');
-
-  let income = [], expenses = [];
-
-  if (dataType === 'all' || dataType === 'income') {
-    const { data } = await db.from('gp_income').select('*')
-      .eq('user_id', currentUser.id)
-      .gte('date', dateFrom).lte('date', dateTo)
-      .order('date', { ascending: false });
-    income = data || [];
-  }
-
-  if (dataType === 'all' || dataType === 'expenses') {
-    const { data } = await db.from('gp_expenses').select('*')
-      .eq('user_id', currentUser.id)
-      .gte('date', dateFrom).lte('date', dateTo)
-      .order('date', { ascending: false });
-    expenses = data || [];
-  }
-
-  setLoading(btn, false, 'Export');
-
-  if (income.length === 0 && expenses.length === 0) {
-    showToast('No data found for selected range', 'error');
-    return;
-  }
-
-  const label = `${dateFrom} to ${dateTo}`;
-  closeModal('exportModal');
-
-  if (format === 'csv') exportCSV(income, expenses, label);
-  if (format === 'pdf') exportPDF(income, expenses, label);
-}
-
-function setExportRange(range) {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  let from, to;
-
-  if (range === 'this-month') {
-    from = new Date(y, m, 1);
-    to = now;
-  } else if (range === 'last-month') {
-    from = new Date(y, m - 1, 1);
-    to = new Date(y, m, 0);
-  } else if (range === 'this-quarter') {
-    const q = Math.floor(m / 3);
-    from = new Date(y, q * 3, 1);
-    to = now;
-  } else if (range === 'this-year') {
-    from = new Date(y, 0, 1);
-    to = now;
-  } else if (range === 'last-year') {
-    from = new Date(y - 1, 0, 1);
-    to = new Date(y - 1, 11, 31);
-  } else if (range === 'all-time') {
-    from = new Date(2020, 0, 1);
-    to = now;
-  }
-
-  document.getElementById('exportDateFrom').value = from.toISOString().split('T')[0];
-  document.getElementById('exportDateTo').value = to.toISOString().split('T')[0];
-
-  // Highlight selected button
-  document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-}
-
-// ── QUARTERLY TAX SUMMARY ─────────────────────────────────
-
-async function loadTaxSummary() {
-  if (!currentUser) return;
-  const now = new Date();
-  const year = now.getFullYear();
-  const country = userProfile?.country || 'US';
-  const taxRate = country === 'CA' ? 0.28 : 0.153;
-  const taxLabel = country === 'CA' ? '28% (CRA estimate)' : '15.3% SE Tax';
-  const currentQ = Math.floor(now.getMonth() / 3) + 1;
-
-  // Fetch full year data
-  const [{ data: income }, { data: expenses }] = await Promise.all([
-    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`).lte('date', `${year}-12-31`),
-    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`).lte('date', `${year}-12-31`)
-  ]);
+async function loadQuarterlyTax(year, taxRate) {
+  const yr = year || new Date().getFullYear();
+  const tr = taxRate || (userProfile?.country === 'CA' ? 0.28 : 0.153);
+  const currentQ = Math.floor(new Date().getMonth() / 3) + 1;
+  set('taxYearLabel', yr + ' Quarterly Tax');
 
   const quarters = [
-    { q: 1, label: 'Q1', months: 'Jan – Mar', start: `${year}-01-01`, end: `${year}-03-31`, due: `Apr 15, ${year}` },
-    { q: 2, label: 'Q2', months: 'Apr – Jun', start: `${year}-04-01`, end: `${year}-06-30`, due: `Jun 16, ${year}` },
-    { q: 3, label: 'Q3', months: 'Jul – Sep', start: `${year}-07-01`, end: `${year}-09-30`, due: `Sep 15, ${year}` },
-    { q: 4, label: 'Q4', months: 'Oct – Dec', start: `${year}-10-01`, end: `${year}-12-31`, due: `Jan 15, ${year + 1}` }
+    { q:1, label:'Q1', months:'Jan – Mar', start:`${yr}-01-01`, end:`${yr}-03-31`, due:`Apr 15, ${yr}` },
+    { q:2, label:'Q2', months:'Apr – Jun', start:`${yr}-04-01`, end:`${yr}-06-30`, due:`Jun 16, ${yr}` },
+    { q:3, label:'Q3', months:'Jul – Sep', start:`${yr}-07-01`, end:`${yr}-09-30`, due:`Sep 15, ${yr}` },
+    { q:4, label:'Q4', months:'Oct – Dec', start:`${yr}-10-01`, end:`${yr}-12-31`, due:`Jan 15, ${yr+1}` }
   ];
 
-  let totalYearIncome = 0, totalYearExpenses = 0, totalYearTax = 0;
+  const [{ data: inc }, { data: exp }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', `${yr}-01-01`),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${yr}-01-01`)
+  ]);
 
-  const quarterCards = quarters.map(({ q, label, months, start, end, due }) => {
-    const qIncome = (income || []).filter(r => r.date >= start && r.date <= end);
-    const qExpenses = (expenses || []).filter(r => r.date >= start && r.date <= end);
-
-    const gross = qIncome.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
-    const exp = qExpenses.reduce((s, r) => s + parseFloat(r.amount), 0);
-    const miles = qIncome.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
-    const mileageDeduction = miles * 0.70;
-    const net = Math.max(0, gross - exp - mileageDeduction);
-    const tax = net * 0.9235 * taxRate;
-    const isPast = q < currentQ;
-    const isCurrent = q === currentQ;
-    const isFuture = q > currentQ;
-
-    totalYearIncome += gross;
-    totalYearExpenses += exp;
-    totalYearTax += tax;
-
-    const status = isPast ? '✅ Past' : isCurrent ? '⚡ Current' : '🔜 Upcoming';
-    const statusClass = isPast ? 'past' : isCurrent ? 'current' : 'future';
-
-    return `
-    <div class="quarter-card ${statusClass}">
-      <div class="quarter-header">
-        <div>
-          <span class="quarter-label">${label}</span>
-          <span class="quarter-months">${months}</span>
-        </div>
-        <span class="quarter-status ${statusClass}">${status}</span>
+  const html = quarters.map(({ q, label, months, start, end, due }) => {
+    const qi = (inc||[]).filter(r => r.date >= start && r.date <= end);
+    const qe = (exp||[]).filter(r => r.date >= start && r.date <= end);
+    const gross = sum(qi, 'amount') + sum(qi, 'tips');
+    const expenses = sum(qe, 'amount');
+    const miles = sum(qi, 'miles') * 0.70;
+    const net = Math.max(0, gross - expenses - miles);
+    const tax = net * 0.9235 * tr;
+    const status = q < currentQ ? 'past' : q === currentQ ? 'current' : 'future';
+    const badge = q < currentQ ? '✅ Past' : q === currentQ ? '⚡ Current' : '🔜 Upcoming';
+    return `<div class="quarter-card ${status === 'current' ? 'active-q' : ''}">
+      <div class="q-header">
+        <div><div class="q-title">${label}</div><div class="q-months">${months}</div></div>
+        <div class="q-badge ${status}">${badge}</div>
       </div>
-      <div class="quarter-body">
-        <div class="quarter-row">
-          <span>Gross Income</span>
-          <span class="positive">${fmt(gross)}</span>
-        </div>
-        <div class="quarter-row">
-          <span>Expenses</span>
-          <span class="negative">-${fmt(exp)}</span>
-        </div>
-        <div class="quarter-row">
-          <span>Mileage Deduction</span>
-          <span class="negative">-${fmt(mileageDeduction)}</span>
-        </div>
-        <div class="quarter-row">
-          <span>Net Profit</span>
-          <span>${fmt(net)}</span>
-        </div>
-        <div class="quarter-tax">
-          <span>Est. Tax Due</span>
-          <span class="tax-amount">${fmt(tax)}</span>
-        </div>
-        <div class="quarter-due">📅 Due: ${due}</div>
+      <div class="q-rows">
+        <div class="q-row"><span>Gross Income</span><span class="positive">${fmt(gross)}</span></div>
+        <div class="q-row"><span>Expenses</span><span class="negative">-${fmt(expenses)}</span></div>
+        <div class="q-row"><span>Mileage Deduction</span><span class="negative">-${fmt(miles)}</span></div>
+        <div class="q-row"><span>Net Profit</span><span>${fmt(net)}</span></div>
       </div>
-      ${isCurrent ? `<div class="quarter-tip">💡 Set aside ${fmt(tax)} by ${due}</div>` : ''}
+      <div class="q-tax-box"><span class="q-tax-label">Est. Tax Due</span><span class="q-tax-amt">${fmt(tax)}</span></div>
+      <div class="q-due">📅 Due: ${due}</div>
+      ${status === 'current' ? `<div style="margin-top:10px;padding:8px 12px;background:rgba(0,212,170,0.06);border-radius:8px;font-size:0.8rem;color:var(--green)">💡 Set aside ${fmt(tax)} by ${due}</div>` : ''}
     </div>`;
   }).join('');
 
-  const yearSummary = `
-  <div class="year-summary-card">
-    <h3>📊 ${year} Full Year Summary</h3>
-    <div class="year-grid">
-      <div class="year-stat">
-        <span class="year-label">Total Income</span>
-        <span class="year-value positive">${fmt(totalYearIncome)}</span>
-      </div>
-      <div class="year-stat">
-        <span class="year-label">Total Expenses</span>
-        <span class="year-value negative">${fmt(totalYearExpenses)}</span>
-      </div>
-      <div class="year-stat">
-        <span class="year-label">Est. Annual Tax</span>
-        <span class="year-value warning">${fmt(totalYearTax)}</span>
-      </div>
-      <div class="year-stat">
-        <span class="year-label">Tax Rate</span>
-        <span class="year-value">${taxLabel}</span>
-      </div>
-    </div>
-    <div class="tax-disclaimer">⚠️ These are estimates only. Consult a tax professional for accurate figures.</div>
-  </div>`;
-
-  document.getElementById('taxSummaryContent').innerHTML = yearSummary + quarterCards;
-  document.getElementById('taxYear').textContent = year;
+  document.getElementById('quarterCards').innerHTML = html;
 }
 
-// ── CHARTS PAGE ───────────────────────────────────────────
+function showQuarterlyTax() { document.getElementById('quarterCards').scrollIntoView({ behavior: 'smooth' }); }
+function showMileageReport() { toast('Mileage shown in quarterly cards above', 'success'); }
+function showProfitLoss() { toast('See the month overview above', 'success'); }
 
-async function loadCharts() {
-  if (!currentUser) return;
+// ── PROFILE ───────────────────────────────────
+async function loadProfilePage() {
+  if (!userProfile) return;
+  const name = userProfile.full_name || 'Driver';
+  const email = currentUser.email;
+  const masked = email.split('@')[0].slice(0,4) + '****@' + email.split('@')[1];
+  set('profileName', name);
+  set('profileEmail', masked);
+  set('siGoal', fmt(userProfile.monthly_goal || 0));
+  set('siCurrency', userProfile.currency || 'USD');
+  const theme = document.documentElement.getAttribute('data-theme');
+  set('siTheme', (theme === 'dark' ? 'Dark' : 'Light') + ' ›');
+  const pp = document.getElementById('profilePlatforms');
+  const plats = userProfile.platforms || [];
+  pp.innerHTML = plats.length === 0 ? '<p style="padding:12px 16px;color:var(--text2);font-size:0.85rem">No platforms set</p>' : plats.map(p => `<div class="plat-chip">${p}</div>`).join('');
+}
+
+// ── EXPORT ────────────────────────────────────
+function showExportModal() {
   const now = new Date();
-  const year = now.getFullYear();
-
-  const [{ data: income }, { data: expenses }] = await Promise.all([
-    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`),
-    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`)
-  ]);
-
-  // Set up each canvas with proper DPR scaling
-  setupCanvas('monthlyChart', 340, 190);
-  setupCanvas('platformDonut', 340, 190);
-  setupCanvas('expenseDonut', 340, 190);
-  setupCanvas('hourlyChart', 340, 180);
-
-  drawMonthlyChart(income || [], expenses || [], year);
-  drawPlatformDonut(income || []);
-  drawExpenseDonut(expenses || []);
-  drawHourlyChart(income || []);
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('exportFrom').value = `${y}-${m}-01`;
+  document.getElementById('exportTo').value = now.toISOString().split('T')[0];
+  document.getElementById('exportModal').classList.add('active');
 }
 
-function setupCanvas(id, w, h) {
-  const canvas = document.getElementById(id);
-  if (!canvas) return;
+function setRange(r, btn) {
+  document.querySelectorAll('.range-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const now = new Date(); const y = now.getFullYear(), m = now.getMonth();
+  let from, to = now;
+  if (r === 'this-month') from = new Date(y, m, 1);
+  else if (r === 'last-month') { from = new Date(y, m-1, 1); to = new Date(y, m, 0); }
+  else if (r === 'this-quarter') { const q = Math.floor(m/3); from = new Date(y, q*3, 1); }
+  else if (r === 'this-year') from = new Date(y, 0, 1);
+  else if (r === 'all-time') from = new Date(2020, 0, 1);
+  document.getElementById('exportFrom').value = from.toISOString().split('T')[0];
+  document.getElementById('exportTo').value = to.toISOString().split('T')[0];
+}
+
+async function runExport() {
+  const from = document.getElementById('exportFrom').value;
+  const to = document.getElementById('exportTo').value;
+  const dataType = document.querySelector('input[name="expData"]:checked')?.value || 'all';
+  const fmt2 = document.querySelector('input[name="expFmt"]:checked')?.value || 'pdf';
+  const btn = document.getElementById('runExportBtn');
+  if (!from || !to) return toast('Select a date range', 'error');
+  setLoading(btn, true, 'Preparing...');
+  let inc = [], exp = [];
+  if (dataType !== 'expenses') { const { data } = await db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', from).lte('date', to).order('date', { ascending: false }); inc = data || []; }
+  if (dataType !== 'income') { const { data } = await db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', from).lte('date', to).order('date', { ascending: false }); exp = data || []; }
+  setLoading(btn, false, 'Export');
+  if (inc.length === 0 && exp.length === 0) { toast('No data found for this range', 'error'); return; }
+  closeModal('exportModal');
+  const label = from + ' to ' + to;
+  fmt2 === 'csv' ? exportCSV(inc, exp, label) : exportPDF(inc, exp, label);
+}
+
+function exportCSV(income, expenses, label) {
+  const totalIncome = income.reduce((s,r) => s+parseFloat(r.amount)+parseFloat(r.tips||0), 0);
+  const totalExp = expenses.reduce((s,r) => s+parseFloat(r.amount), 0);
+  const csv = [
+    [`GIGPROFIT EXPORT — ${label}`], [],
+    ['=== INCOME ==='],
+    ['Date','Platform','Earnings','Tips','Total','Hours','Miles','Notes'],
+    ...income.map(r => [r.date,r.platform,r.amount,r.tips||0,(parseFloat(r.amount)+parseFloat(r.tips||0)).toFixed(2),r.hours||'',r.miles||'',r.notes||'']),
+    [], ['=== EXPENSES ==='],
+    ['Date','Category','Amount','Deductible','Notes'],
+    ...expenses.map(r => [r.date,r.category,r.amount,r.is_deductible?'Yes':'No',r.notes||'']),
+    [], ['=== SUMMARY ==='],
+    ['Total Income', totalIncome.toFixed(2)],
+    ['Total Expenses', totalExp.toFixed(2)],
+    ['Net', (totalIncome-totalExp).toFixed(2)]
+  ].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `GigProfit-Export.csv`; a.click();
+  toast('CSV downloaded!', 'success');
+}
+
+function exportPDF(income, expenses, label) {
+  const totalInc = income.reduce((s,r) => s+parseFloat(r.amount)+parseFloat(r.tips||0), 0);
+  const totalExp = expenses.reduce((s,r) => s+parseFloat(r.amount), 0);
+  const miles = income.reduce((s,r) => s+parseFloat(r.miles||0), 0);
+  const taxRate = userProfile?.country === 'CA' ? 0.28 : 0.153;
+  const tax = Math.max(0,totalInc-totalExp)*0.9235*taxRate;
+  const net = totalInc-totalExp-tax;
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>GigProfit Tax Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#1a1a1a;font-size:12px}.logo{font-size:20px;font-weight:800;color:#00d4aa}.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0}.card{background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #00d4aa}.label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:4px}.val{font-size:16px;font-weight:800}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px}th{background:#f0f0f0;padding:8px;text-align:left;font-weight:700}td{padding:7px;border-bottom:1px solid #f0f0f0}.disc{background:#fff8e6;border:1px solid #ffd980;border-radius:6px;padding:10px;font-size:10px;color:#7a5c00;margin-top:20px}</style></head><body>
+  <div class="logo">GigProfit</div><div style="color:#888;font-size:11px;margin-bottom:20px">Tax Report · ${label} · Generated ${new Date().toLocaleDateString()}</div>
+  <div class="grid"><div class="card"><div class="label">Total Income</div><div class="val" style="color:#00d4aa">${fmt(totalInc)}</div></div><div class="card" style="border-color:#f87171"><div class="label">Total Expenses</div><div class="val" style="color:#f87171">${fmt(totalExp)}</div></div><div class="card" style="border-color:#fbbf24"><div class="label">Est. Tax</div><div class="val" style="color:#fbbf24">${fmt(tax)}</div></div><div class="card" style="border-color:#3b82f6"><div class="label">Net Profit</div><div class="val">${fmt(net)}</div></div><div class="card" style="border-color:#3b82f6"><div class="label">Total Miles</div><div class="val">${miles.toFixed(1)} mi</div></div><div class="card" style="border-color:#a78bfa"><div class="label">Mile Deduction</div><div class="val">${fmt(miles*0.70)}</div></div></div>
+  <h3 style="margin:20px 0 8px">Income (${income.length} entries)</h3><table><tr><th>Date</th><th>Platform</th><th>Amount</th><th>Tips</th><th>Miles</th></tr>${income.map(r=>`<tr><td>${r.date}</td><td>${r.platform}</td><td>$${parseFloat(r.amount).toFixed(2)}</td><td>$${parseFloat(r.tips||0).toFixed(2)}</td><td>${r.miles||0}</td></tr>`).join('')}</table>
+  <h3 style="margin:20px 0 8px">Expenses (${expenses.length} entries)</h3><table><tr><th>Date</th><th>Category</th><th>Amount</th><th>Deductible</th></tr>${expenses.map(r=>`<tr><td>${r.date}</td><td>${r.category}</td><td>$${parseFloat(r.amount).toFixed(2)}</td><td>${r.is_deductible?'Yes':'No'}</td></tr>`).join('')}</table>
+  <div class="disc">⚠️ This report is for informational purposes only and does not constitute tax advice. Consult a qualified tax professional.</div>
+  </body></html>`);
+  win.document.close(); setTimeout(() => win.print(), 500);
+  toast('PDF ready — use Print to save', 'success');
+}
+
+// ── HELPERS ───────────────────────────────────
+function getRange(period) {
+  const now = new Date(), today = now.toISOString().split('T')[0];
+  if (period === 'today') return { start: today, end: today };
+  if (period === 'day') return { start: today, end: today };
+  if (period === 'week') {
+    const day = now.getDay(), mon = new Date(now);
+    mon.setDate(now.getDate() - day + (day === 0 ? -6 : 1));
+    return { start: mon.toISOString().split('T')[0], end: today };
+  }
+  if (period === 'month') {
+    return { start: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`, end: today };
+  }
+  if (period === 'year') return { start: `${now.getFullYear()}-01-01`, end: today };
+  return { start: today, end: today };
+}
+
+function sum(arr, field) { return (arr || []).reduce((s, r) => s + parseFloat(r[field] || 0), 0); }
+function fmt(n) { return '$' + Math.abs(parseFloat(n)||0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function formatDate(d) { if (!d) return ''; return new Date(d+'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+function formatDateLong(d) { if (!d) return ''; return new Date(d+'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+function set(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+function closeModal(id) { document.getElementById(id)?.classList.remove('active'); editingId = null; }
+function setLoading(btn, loading, text) { if (!btn) return; btn.disabled = loading; btn.textContent = text; }
+function getCatEmoji(cat) { const m = { 'Gas': '⛽', 'Car Repair': '🔧', 'Car Wash': '🚿', 'Insurance': '🛡', 'Phone Bill': '📱', 'Tolls': '🛣', 'Parking': '🅿️', 'Food & Drinks': '☕', 'Other': '📦' }; return m[cat] || '📋'; }
+
+function setupCanvas(canvas, h) {
   const dpr = window.devicePixelRatio || 1;
-  const parent = canvas.parentElement;
-  const actualW = parent ? parent.clientWidth - 32 : w;
-  canvas.width = actualW * dpr;
-  canvas.height = h * dpr;
-  canvas.style.width = actualW + 'px';
-  canvas.style.height = h + 'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  return { W: actualW, H: h };
+  const w = canvas.parentElement?.clientWidth - 32 || 300;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
 }
 
-function drawMonthlyChart(income, expenses, year) {
-  const canvas = document.getElementById('monthlyChart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = parseInt(canvas.style.width) || 340;
-  const H = parseInt(canvas.style.height) || 190;
-  const padL = 40, padR = 16, padT = 24, padB = 36;
-  const chartW = W - padL - padR, chartH = H - padT - padB;
-
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const incData = Array(12).fill(0);
-  const expData = Array(12).fill(0);
-  const profitData = Array(12).fill(0);
-
-  income.forEach(r => {
-    const m = new Date(r.date + 'T00:00:00').getMonth();
-    incData[m] += parseFloat(r.amount) + parseFloat(r.tips || 0);
-  });
-  expenses.forEach(r => {
-    const m = new Date(r.date + 'T00:00:00').getMonth();
-    expData[m] += parseFloat(r.amount);
-  });
-  for (let i = 0; i < 12; i++) profitData[i] = Math.max(0, incData[i] - expData[i]);
-
-  const maxVal = Math.max(...incData, ...expData, 1);
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
-  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-
-  ctx.clearRect(0, 0, W, H);
-
-  // Grid lines
-  for (let i = 0; i <= 4; i++) {
-    const y = padT + (chartH / 4) * i;
-    ctx.strokeStyle = gridColor; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-    ctx.fillStyle = textColor; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('$' + Math.round(maxVal - (maxVal / 4) * i), padL - 4, y + 3);
-  }
-
-  const stepX = chartW / 12;
-  const currentMonth = new Date().getMonth();
-
-  // Draw income bars
-  incData.forEach((val, i) => {
-    const x = padL + stepX * i + stepX * 0.1;
-    const bw = stepX * 0.35;
-    const bh = (val / maxVal) * chartH;
-    const isCurrentMonth = i === currentMonth;
-    const grad = ctx.createLinearGradient(0, padT + chartH - bh, 0, padT + chartH);
-    grad.addColorStop(0, isCurrentMonth ? '#00d4aa' : 'rgba(0,212,170,0.6)');
-    grad.addColorStop(1, 'rgba(0,212,170,0.1)');
-    ctx.fillStyle = grad;
-    ctx.beginPath(); ctx.roundRect(x, padT + chartH - bh, bw, Math.max(bh, 1), 3); ctx.fill();
-  });
-
-  // Draw expense bars
-  expData.forEach((val, i) => {
-    const x = padL + stepX * i + stepX * 0.5;
-    const bw = stepX * 0.35;
-    const bh = (val / maxVal) * chartH;
-    ctx.fillStyle = 'rgba(255,77,77,0.5)';
-    ctx.beginPath(); ctx.roundRect(x, padT + chartH - bh, bw, Math.max(bh, 1), 3); ctx.fill();
-  });
-
-  // Draw profit line
-  ctx.strokeStyle = '#0066ff';
-  ctx.lineWidth = 2;
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  profitData.forEach((val, i) => {
-    const x = padL + stepX * i + stepX * 0.5;
-    const y = padT + chartH - (val / maxVal) * chartH;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Dots on profit line
-  profitData.forEach((val, i) => {
-    const x = padL + stepX * i + stepX * 0.5;
-    const y = padT + chartH - (val / maxVal) * chartH;
-    ctx.fillStyle = '#0066ff';
-    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
-  });
-
-  // Month labels
-  months.forEach((m, i) => {
-    const x = padL + stepX * i + stepX * 0.5;
-    ctx.fillStyle = i === currentMonth ? '#00d4aa' : textColor;
-    ctx.font = i === currentMonth ? 'bold 9px sans-serif' : '9px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(m, x, H - 8);
-  });
-}
-
-function drawPlatformDonut(income) {
-  const canvas = document.getElementById('platformDonut');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = parseInt(canvas.style.width) || 340;
-  const H = parseInt(canvas.style.height) || 190;
-  const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
-
-  const byPlatform = {};
-  income.forEach(row => {
-    const p = row.platform;
-    byPlatform[p] = (byPlatform[p] || 0) + parseFloat(row.amount) + parseFloat(row.tips || 0);
-  });
-
-  const entries = Object.entries(byPlatform).sort((a, b) => b[1] - a[1]);
-  const total = entries.reduce((s, [, v]) => s + v, 0);
-
-  const colors = ['#00d4aa','#0066ff','#ff6b6b','#ffa500','#9b59b6','#1abc9c','#e74c3c','#f39c12'];
-
-  ctx.clearRect(0, 0, W, H);
-
-  if (total === 0) {
-    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('No income data', cx, cy);
-    return;
-  }
-
-  let angle = -Math.PI / 2;
-  entries.forEach(([, val], i) => {
-    const slice = (val / total) * Math.PI * 2;
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, R, angle, angle + slice);
-    ctx.closePath(); ctx.fill();
-    angle += slice;
-  });
-
-  // Donut hole
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  ctx.fillStyle = isDark ? '#151c2e' : '#ffffff';
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-
-  // Center text
-  ctx.fillStyle = '#00d4aa';
-  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('$' + Math.round(total), cx, cy - 4);
-  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-  ctx.font = '10px sans-serif';
-  ctx.fillText('total', cx, cy + 12);
-
-  // Legend
-  const legendX = W * 0.72, legendStartY = cy - (entries.length * 18) / 2;
-  entries.slice(0, 6).forEach(([name, val], i) => {
-    const y = legendStartY + i * 20;
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fillRect(legendX - 22, y - 6, 10, 10);
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)';
-    ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(name.length > 10 ? name.slice(0, 10) + '…' : name, legendX - 8, y + 3);
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-    ctx.font = '9px sans-serif';
-    ctx.fillText(Math.round((val / total) * 100) + '%', legendX - 8, y + 14);
-  });
-}
-
-function drawExpenseDonut(expenses) {
-  const canvas = document.getElementById('expenseDonut');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = parseInt(canvas.style.width) || 340;
-  const H = parseInt(canvas.style.height) || 190;
-  const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
-
-  const byCategory = {};
-  expenses.forEach(row => {
-    byCategory[row.category] = (byCategory[row.category] || 0) + parseFloat(row.amount);
-  });
-
-  const entries = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
-  const total = entries.reduce((s, [, v]) => s + v, 0);
-  const colors = ['#ff6b6b','#ffa500','#ff4757','#ff6348','#eccc68','#ff7f50','#ff6b81','#ff4500'];
-
-  ctx.clearRect(0, 0, W, H);
-
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-
-  if (total === 0) {
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('No expense data', cx, cy);
-    return;
-  }
-
-  let angle = -Math.PI / 2;
-  entries.forEach(([, val], i) => {
-    const slice = (val / total) * Math.PI * 2;
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.beginPath(); ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, R, angle, angle + slice);
-    ctx.closePath(); ctx.fill();
-    angle += slice;
-  });
-
-  ctx.fillStyle = isDark ? '#151c2e' : '#ffffff';
-  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-
-  ctx.fillStyle = '#ff6b6b';
-  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('$' + Math.round(total), cx, cy - 4);
-  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-  ctx.font = '10px sans-serif';
-  ctx.fillText('expenses', cx, cy + 12);
-
-  const legendX = W * 0.72, legendStartY = cy - (Math.min(entries.length, 6) * 18) / 2;
-  entries.slice(0, 6).forEach(([name, val], i) => {
-    const y = legendStartY + i * 20;
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.fillRect(legendX - 22, y - 6, 10, 10);
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)';
-    ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(name.length > 10 ? name.slice(0, 10) + '…' : name, legendX - 8, y + 3);
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
-    ctx.font = '9px sans-serif';
-    ctx.fillText('$' + Math.round(val), legendX - 8, y + 14);
-  });
-}
-
-function drawHourlyChart(income) {
-  const canvas = document.getElementById('hourlyChart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = parseInt(canvas.style.width) || 340;
-  const H = parseInt(canvas.style.height) || 180;
-  const padL = 8, padR = 8, padT = 20, padB = 28;
-  const chartW = W - padL - padR, chartH = H - padT - padB;
-
-  // Group by platform — avg hourly rate
-  const byPlatform = {};
-  income.forEach(r => {
-    if (!r.hours || parseFloat(r.hours) === 0) return;
-    const p = r.platform;
-    if (!byPlatform[p]) byPlatform[p] = { earn: 0, hours: 0 };
-    byPlatform[p].earn += parseFloat(r.amount) + parseFloat(r.tips || 0);
-    byPlatform[p].hours += parseFloat(r.hours);
-  });
-
-  const entries = Object.entries(byPlatform)
-    .map(([p, d]) => ({ name: p, rate: d.hours > 0 ? d.earn / d.hours : 0 }))
-    .sort((a, b) => b.rate - a.rate);
-
-  const colors = ['#00d4aa','#0066ff','#ffa500','#ff6b6b','#9b59b6','#1abc9c'];
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-  const textColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
-
-  ctx.clearRect(0, 0, W, H);
-
-  if (entries.length === 0) {
-    ctx.fillStyle = textColor; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('Log hours to see hourly rates', W / 2, H / 2);
-    return;
-  }
-
-  const maxRate = Math.max(...entries.map(e => e.rate), 1);
-  const barH = Math.min((chartH / entries.length) * 0.6, 32);
-  const gap = chartH / entries.length;
-
-  entries.forEach(({ name, rate }, i) => {
-    const y = padT + gap * i + (gap - barH) / 2;
-    const bw = (rate / maxRate) * chartW;
-
-    // Bar
-    const grad = ctx.createLinearGradient(padL, 0, padL + bw, 0);
-    grad.addColorStop(0, colors[i % colors.length]);
-    grad.addColorStop(1, colors[i % colors.length] + '60');
-    ctx.fillStyle = grad;
-    ctx.beginPath(); ctx.roundRect(padL, y, bw, barH, 4); ctx.fill();
-
-    // Platform name
-    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
-    ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(name, padL + 8, y + barH / 2 + 4);
-
-    // Rate
-    ctx.fillStyle = colors[i % colors.length];
-    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('$' + rate.toFixed(2) + '/hr', W - padR, y + barH / 2 + 4);
-  });
+function toast(msg, type = 'success') {
+  document.querySelector('.toast')?.remove();
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }

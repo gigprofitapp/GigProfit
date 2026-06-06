@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GigProfit - Gig Worker Tracker</title>
+  <title>GigProfit - Gig Worker Finance</title>
   <meta name="description" content="Track earnings, expenses, and real profit for Uber, DoorDash, Lyft, Instacart & more.">
   <meta name="theme-color" content="#00d4aa">
   <link rel="manifest" href="/GigProfit/manifest.json">
@@ -13,442 +13,485 @@
 </head>
 <body>
 
-<!-- ── SPLASH ─────────────────────────────── -->
+<!-- SPLASH -->
 <div id="splashPage" class="page active splash-page">
-  <div class="splash-content">
-    <img src="/GigProfit/icons/icon-512.png" alt="GigProfit" class="splash-logo">
-    <h1 class="splash-title">GigProfit</h1>
-    <p class="splash-sub">Your real earnings. Simplified.</p>
-    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <div class="splash-inner">
+    <img src="/GigProfit/icons/icon-512.png" class="splash-logo" alt="GigProfit">
+    <div class="splash-name">GigProfit</div>
+    <div class="splash-tag">Your real earnings. Simplified.</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
   </div>
 </div>
 
-<!-- ── AUTH ──────────────────────────────── -->
-<div id="authPage" class="page">
-  <div class="auth-container">
-    <div class="auth-header">
-      <img src="/GigProfit/icons/icon-192.png" alt="GigProfit" class="auth-logo">
+<!-- AUTH -->
+<div id="authPage" class="page auth-page">
+  <div class="auth-wrap">
+    <div class="auth-logo-wrap">
+      <img src="/GigProfit/icons/icon-192.png" class="auth-logo" alt="GigProfit">
       <h1>GigProfit</h1>
       <p>Track your real earnings. Own your hustle.</p>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-      <button class="auth-tab" onclick="switchTab('signup')">Create Account</button>
+      <button class="auth-tab active" onclick="switchAuthTab('login', this)">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup', this)">Create Account</button>
     </div>
     <div id="loginForm" class="auth-form active">
-      <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
-      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
       <button id="signInBtn" class="btn-primary" onclick="signIn()">Sign In</button>
     </div>
     <div id="signupForm" class="auth-form">
-      <input type="text" id="signupName" placeholder="Full name" autocomplete="name">
-      <input type="email" id="signupEmail" placeholder="Email address" autocomplete="email">
-      <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Aziz Salimi" autocomplete="name"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupEmail" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters" autocomplete="new-password"></div>
       <button id="signUpBtn" class="btn-primary" onclick="signUp()">Create Account</button>
     </div>
-    <div class="auth-divider"><span>or</span></div>
+    <div class="divider"><span>or</span></div>
     <button class="btn-google" onclick="signInWithGoogle()">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
       Continue with Google
     </button>
-    <p class="auth-terms">By continuing you agree to our <a href="/GigProfit/privacy.html" target="_blank">Privacy Policy</a> and <a href="/GigProfit/terms.html" target="_blank">Terms of Service</a></p>
+    <p class="auth-terms">By continuing you agree to our <a href="/GigProfit/privacy.html" target="_blank">Privacy Policy</a> and <a href="/GigProfit/terms.html" target="_blank">Terms</a></p>
   </div>
 </div>
 
-<!-- ── ONBOARDING ─────────────────────────── -->
-<div id="onboardingPage" class="page">
-  <div class="onboarding-container">
-    <div class="onboarding-dots">
-      <span class="dot active"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
+<!-- ONBOARDING -->
+<div id="onboardingPage" class="page ob-page">
+  <div class="ob-wrap">
+    <div class="ob-dots">
+      <span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span>
     </div>
-
-    <!-- Step 1: Platforms -->
-    <div id="step1" class="onboarding-step active">
-      <div class="onboarding-icon">🚗</div>
+    <div id="ob1" class="ob-step active">
+      <div class="ob-icon">🚗</div>
       <h2>Which platforms do you drive for?</h2>
       <p>Select all that apply</p>
       <div class="platform-grid">
-        <button class="platform-chip" onclick="togglePlatform(this, 'Uber')">🚕 Uber</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Lyft')">🩷 Lyft</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'DoorDash')">🍕 DoorDash</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Instacart')">🛒 Instacart</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Amazon Flex')">📦 Amazon Flex</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Uber Eats')">🍔 Uber Eats</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Grubhub')">🥡 Grubhub</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Spark')">⚡ Spark</button>
-        <button class="platform-chip" onclick="togglePlatform(this, 'Other')">➕ Other</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Uber')">🚕 Uber</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Lyft')">🩷 Lyft</button>
+        <button class="p-chip" onclick="togglePlatform(this,'DoorDash')">🍕 DoorDash</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Instacart')">🛒 Instacart</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Amazon Flex')">📦 Amazon Flex</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Uber Eats')">🍔 Uber Eats</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Grubhub')">🥡 Grubhub</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Spark')">⚡ Spark</button>
+        <button class="p-chip" onclick="togglePlatform(this,'Other')">➕ Other</button>
       </div>
-      <button class="btn-primary" onclick="nextOnboarding(2)">Next →</button>
+      <button class="btn-primary" onclick="obNext(2)">Next →</button>
     </div>
-
-    <!-- Step 2: Country & Currency -->
-    <div id="step2" class="onboarding-step">
-      <div class="onboarding-icon">🌍</div>
+    <div id="ob2" class="ob-step">
+      <div class="ob-icon">🌍</div>
       <h2>Where are you based?</h2>
       <p>We'll use the right tax rates for your location</p>
-      <div class="form-group">
-        <label>Country</label>
-        <select id="countrySelect">
-          <option value="US">🇺🇸 United States</option>
-          <option value="CA">🇨🇦 Canada</option>
-        </select>
+      <div class="form-group"><label>Country</label>
+        <select id="obCountry"><option value="US">🇺🇸 United States</option><option value="CA">🇨🇦 Canada</option></select>
       </div>
-      <div class="form-group">
-        <label>Currency</label>
-        <select id="currencySelect">
-          <option value="USD">USD - US Dollar</option>
-          <option value="CAD">CAD - Canadian Dollar</option>
-        </select>
+      <div class="form-group"><label>Currency</label>
+        <select id="obCurrency"><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option></select>
       </div>
-      <div class="onboarding-nav">
-        <button class="btn-secondary" onclick="prevOnboarding(1)">← Back</button>
-        <button class="btn-primary" onclick="nextOnboarding(3)">Next →</button>
+      <div class="ob-nav">
+        <button class="btn-back" onclick="obPrev(1)">← Back</button>
+        <button class="btn-primary" onclick="obNext(3)">Next →</button>
       </div>
     </div>
-
-    <!-- Step 3: Tax Status -->
-    <div id="step3" class="onboarding-step">
-      <div class="onboarding-icon">📋</div>
-      <h2>What's your tax filing status?</h2>
+    <div id="ob3" class="ob-step">
+      <div class="ob-icon">📋</div>
+      <h2>Tax filing status</h2>
       <p>Used for estimated tax calculations</p>
-      <div class="form-group">
-        <label>Filing Status</label>
-        <select id="taxStatus">
+      <div class="form-group"><label>Status</label>
+        <select id="obTaxStatus">
           <option value="single">Single</option>
           <option value="married">Married Filing Jointly</option>
           <option value="hoh">Head of Household</option>
         </select>
       </div>
-      <div class="onboarding-nav">
-        <button class="btn-secondary" onclick="prevOnboarding(2)">← Back</button>
-        <button class="btn-primary" onclick="nextOnboarding(4)">Next →</button>
+      <div class="ob-nav">
+        <button class="btn-back" onclick="obPrev(2)">← Back</button>
+        <button class="btn-primary" onclick="obNext(4)">Next →</button>
       </div>
     </div>
-
-    <!-- Step 4: Goal -->
-    <div id="step4" class="onboarding-step">
-      <div class="onboarding-icon">🎯</div>
-      <h2>What's your monthly income goal?</h2>
+    <div id="ob4" class="ob-step">
+      <div class="ob-icon">🎯</div>
+      <h2>Monthly income goal</h2>
       <p>Track your progress every day</p>
-      <div class="form-group">
-        <label>Monthly Goal ($)</label>
-        <input type="number" id="monthlyGoal" placeholder="e.g. 3000" value="3000" min="0">
+      <div class="form-group"><label>Monthly Goal ($)</label>
+        <input type="number" id="obGoal" placeholder="3000" value="3000" min="0">
       </div>
-      <div class="onboarding-nav">
-        <button class="btn-secondary" onclick="prevOnboarding(3)">← Back</button>
-        <button id="finishOnboardingBtn" class="btn-primary" onclick="finishOnboarding()">Get Started →</button>
+      <div class="ob-nav">
+        <button class="btn-back" onclick="obPrev(3)">← Back</button>
+        <button id="obFinishBtn" class="btn-primary" onclick="finishOnboarding()">Get Started 🚀</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── MAIN APP ────────────────────────────── -->
+<!-- APP SHELL -->
 <div id="appShell" class="app-shell">
 
-  <!-- Dashboard -->
-  <div id="dashboardPage" class="page">
-    <div class="app-header">
-      <div>
-        <p id="dashGreeting" class="greeting-text">Good morning</p>
-        <h2 id="dashName" class="header-name">Driver</h2>
-      </div>
-      <button id="themeBtn" class="theme-btn" onclick="toggleTheme()">🌙</button>
-    </div>
-    <div class="page-content">
-      <div class="period-tabs">
-        <button class="period-btn active" onclick="setDashPeriod('today', this)">Today</button>
-        <button class="period-btn" onclick="setDashPeriod('week', this)">Week</button>
-        <button class="period-btn" onclick="setDashPeriod('month', this)">Month</button>
-      </div>
-      <div class="profit-card">
-        <p class="profit-label">REAL PROFIT</p>
-        <h1 id="realProfit" class="profit-amount">$0.00</h1>
-        <div class="profit-meta">
-          <span id="hoursWorked"></span>
-          <span id="hourlyRate"></span>
-        </div>
-        <div class="goal-bar"><div id="goalProgress" class="goal-fill" style="width:0%"></div></div>
-        <p id="goalText" class="goal-text"></p>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <p class="stat-label">GROSS INCOME</p>
-          <p id="grossIncome" class="stat-value positive">$0</p>
-        </div>
-        <div class="stat-card">
-          <p class="stat-label">EXPENSES</p>
-          <p id="totalExpenses" class="stat-value negative">$0</p>
-        </div>
-        <div class="stat-card full-width">
-          <p class="stat-label">EST. TAX</p>
-          <p id="estTax" class="stat-value warning">$0</p>
+  <!-- HOME -->
+  <div id="homePage" class="page">
+    <div class="page-scroll">
+      <div class="home-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="home-greeting" id="homeGreeting">Good morning,</div>
+            <div class="home-name" id="homeName">Driver 👋</div>
+            <div class="home-goal-hint" id="homeGoalHint"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+          </div>
         </div>
       </div>
-      <div class="section-card">
-        <h3 class="section-title">7-Day Earnings</h3>
-        <canvas id="earningsChart" width="340" height="160"></canvas>
+
+      <!-- Profit Hero -->
+      <div class="profit-hero">
+        <div class="profit-hero-top">
+          <div class="profit-hero-label">Today's Profit</div>
+          <div class="period-pill">
+            <button class="active" onclick="setHomePeriod('today',this)">Today</button>
+            <button onclick="setHomePeriod('week',this)">Week</button>
+            <button onclick="setHomePeriod('month',this)">Month</button>
+          </div>
+        </div>
+        <div class="profit-amount" id="heroProfit">$0.00</div>
+        <div class="profit-sub">What you actually kept</div>
+        <div class="profit-breakdown">
+          <div class="pb-item" style="padding-right:12px">
+            <div class="pb-label"><span class="dot green"></span>Earnings</div>
+            <div class="pb-value positive" id="heroEarnings">$0</div>
+          </div>
+          <div class="pb-item" style="padding:0 12px;text-align:center">
+            <div class="pb-label" style="justify-content:center"><span class="dot red"></span>Expenses</div>
+            <div class="pb-value negative" id="heroExpenses">$0</div>
+          </div>
+          <div class="pb-item" style="padding-left:12px;text-align:right">
+            <div class="pb-label" style="justify-content:flex-end"><span class="dot yellow"></span>Tax Reserve</div>
+            <div class="pb-value warning" id="heroTax">$0</div>
+          </div>
+        </div>
+        <div class="goal-row">
+          <span>Monthly Goal</span>
+          <span id="goalPct">0% of $0</span>
+        </div>
+        <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
       </div>
-      <div class="section-card">
-        <h3 class="section-title">By Platform</h3>
-        <div id="platformBreakdown"></div>
+
+      <!-- Insight -->
+      <div class="insight-card" id="insightCard">
+        <div class="insight-icon">📈</div>
+        <div class="insight-text">
+          <div class="insight-label">Insight</div>
+          <div class="insight-msg" id="insightMsg">Log income to see your personalized insights.</div>
+        </div>
+        <div class="insight-arrow">›</div>
       </div>
-      <div class="section-card">
-        <h3 class="section-title">Recent Activity</h3>
-        <div id="recentActivity"></div>
+
+      <!-- This Week -->
+      <div class="section-header"><div class="section-title">This Week</div></div>
+      <div class="week-card">
+        <div class="week-grid">
+          <div class="wg-item">
+            <div class="wg-label">💰 Earnings</div>
+            <div class="wg-val positive" id="weekEarn">$0</div>
+            <div class="wg-change" id="weekEarnChange"></div>
+          </div>
+          <div class="wg-item">
+            <div class="wg-label">📋 Expenses</div>
+            <div class="wg-val negative" id="weekExp">$0</div>
+            <div class="wg-change" id="weekExpChange"></div>
+          </div>
+          <div class="wg-item">
+            <div class="wg-label">🛡 Tax Reserve</div>
+            <div class="wg-val warning" id="weekTax">$0</div>
+            <div class="wg-change" id="weekTaxNote"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today at a Glance -->
+      <div class="section-header"><div class="section-title">Today at a Glance</div></div>
+      <div class="glance-card">
+        <div class="glance-grid">
+          <div class="gl-item">
+            <div class="gl-icon teal">⏱</div>
+            <div class="gl-val" id="glanceHours">0h</div>
+            <div class="gl-label">Online time</div>
+          </div>
+          <div class="gl-item">
+            <div class="gl-icon blue">🚗</div>
+            <div class="gl-val" id="glanceMiles">0 mi</div>
+            <div class="gl-label">Miles driven</div>
+          </div>
+          <div class="gl-item">
+            <div class="gl-icon purple">📈</div>
+            <div class="gl-val" id="glanceHourly">$0/hr</div>
+            <div class="gl-label">Profit per hour</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="section-header">
+        <div class="section-title">Recent Activity</div>
+        <button class="section-link" onclick="showPage('earnings')">View all</button>
+      </div>
+      <div class="activity-list" id="recentActivity">
+        <div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>
       </div>
     </div>
   </div>
 
-  <!-- Income -->
-  <div id="incomePage" class="page">
+  <!-- EARNINGS -->
+  <div id="earningsPage" class="page">
     <div class="app-header">
-      <h2>Income</h2>
-      <button class="btn-add" onclick="showAddIncome()">+ Add</button>
+      <div class="app-header-row">
+        <h2>Earnings</h2>
+        <button class="btn-add" onclick="showAddIncome()">+ Add</button>
+      </div>
     </div>
-    <div class="page-content">
-      <div id="incomeList"></div>
+    <div class="page-scroll" style="padding-top:0">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setEarnFilter('day',this)">Day</button>
+        <button class="filter-btn" onclick="setEarnFilter('week',this)">Week</button>
+        <button class="filter-btn" onclick="setEarnFilter('month',this)">Month</button>
+        <button class="filter-btn" onclick="setEarnFilter('year',this)">Year</button>
+      </div>
+      <div class="earn-summary">
+        <div class="earn-total-label">Total Earnings</div>
+        <div class="earn-total" id="earnTotal">$0.00</div>
+        <div class="earn-change" id="earnChange"></div>
+      </div>
+      <div class="chart-card">
+        <canvas id="earnChart"></canvas>
+      </div>
+      <div class="section-header"><div class="section-title">By Platform</div></div>
+      <div class="platform-list" id="platformList">
+        <div class="empty-wrap"><p>No earnings logged yet</p></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Earnings History</div>
+        <button class="section-link" id="earnViewAll" style="display:none" onclick="toggleEarnHistory()">View all</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
     </div>
   </div>
 
-  <!-- Expenses -->
+  <!-- EXPENSES -->
   <div id="expensesPage" class="page">
     <div class="app-header">
-      <h2>Expenses</h2>
-      <button class="btn-add" onclick="showAddExpense()">+ Add</button>
+      <div class="app-header-row">
+        <h2>Expenses</h2>
+      </div>
     </div>
-    <div class="page-content">
-      <div id="expenseList"></div>
+    <div class="page-scroll" style="padding-top:0">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setExpFilter('day',this)">Day</button>
+        <button class="filter-btn" onclick="setExpFilter('week',this)">Week</button>
+        <button class="filter-btn" onclick="setExpFilter('month',this)">Month</button>
+        <button class="filter-btn" onclick="setExpFilter('year',this)">Year</button>
+      </div>
+      <div class="exp-summary">
+        <div class="exp-total-label">Total Expenses</div>
+        <div class="exp-total" id="expTotal">$0.00</div>
+        <div class="earn-change" id="expChange"></div>
+      </div>
+      <div class="chart-card">
+        <canvas id="expChart"></canvas>
+      </div>
+      <div class="section-header"><div class="section-title">Recent Expenses</div></div>
+      <div class="entry-list" id="expenseList">
+        <div class="empty-wrap"><div class="empty-icon">📋</div><h3>No expenses yet</h3><p>Track gas, repairs, and more to calculate your real profit</p></div>
+      </div>
     </div>
+    <button class="fab" onclick="showAddExpense()">+</button>
   </div>
 
-  <!-- Mileage -->
-  <div id="mileagePage" class="page">
+  <!-- REPORTS -->
+  <div id="reportsPage" class="page">
     <div class="app-header">
-      <h2>Mileage</h2>
+      <div class="app-header-row">
+        <h2>Reports</h2>
+        <select id="reportMonth" onchange="loadReports()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:0.8rem;color:var(--text);outline:none"></select>
+      </div>
     </div>
-    <div class="page-content">
-      <div class="mileage-hero">
-        <div class="mileage-main">
-          <span id="monthMiles" class="miles-big">0</span>
-          <span id="monthUnit" class="miles-unit">mi</span>
-          <p class="miles-label">this month</p>
-        </div>
-        <div class="mileage-deduction">
-          <p class="deduction-label">Est. Tax Deduction</p>
-          <p id="monthDeduction" class="deduction-amt">$0.00</p>
-          <p id="irsRate" class="irs-rate">$0.70/mile (IRS 2026)</p>
+    <div class="page-scroll" style="padding-top:8px">
+      <div class="reports-overview">
+        <h3>This Month Overview</h3>
+        <div class="ro-net" id="roNet">$0.00</div>
+        <div class="ro-grid">
+          <div class="ro-item"><label>Earnings</label><span class="positive" id="roEarn">$0</span></div>
+          <div class="ro-item"><label>Expenses</label><span class="negative" id="roExp">$0</span></div>
+          <div class="ro-item"><label>Tax Reserve</label><span class="warning" id="roTax">$0</span></div>
+          <div class="ro-item"><label>Mileage Deduction</label><span id="roMiles">$0</span></div>
         </div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card full-width">
-          <p class="stat-label"><span id="mileageYear">2026</span> YEAR TO DATE</p>
-          <p id="yearMiles" class="stat-value">0 mi · <span id="yearDeduction">$0</span> est. deduction</p>
+
+      <div class="section-header"><div class="section-title">Reports</div></div>
+      <div class="report-links">
+        <div class="rl-item" onclick="showQuarterlyTax()">
+          <div class="rl-icon yellow">🛡</div>
+          <div class="rl-info"><div class="rl-name">Tax Summary</div><div class="rl-desc">Quarterly tax reserve breakdown</div></div>
+          <div class="rl-arrow">›</div>
+        </div>
+        <div class="rl-item" onclick="showMileageReport()">
+          <div class="rl-icon blue">🚗</div>
+          <div class="rl-info"><div class="rl-name">Mileage Report</div><div class="rl-desc">Track miles and IRS deduction</div></div>
+          <div class="rl-arrow">›</div>
+        </div>
+        <div class="rl-item" onclick="showProfitLoss()">
+          <div class="rl-icon teal">📈</div>
+          <div class="rl-info"><div class="rl-name">Profit & Loss</div><div class="rl-desc">Monthly P&L overview</div></div>
+          <div class="rl-arrow">›</div>
         </div>
       </div>
-      <div class="section-card">
-        <h3 class="section-title">Trips This Month</h3>
-        <div id="tripsList"></div>
+
+      <div class="section-header"><div class="section-title">Export Data</div></div>
+      <div class="export-section">
+        <div class="rl-item" onclick="showExportModal()">
+          <div class="rl-icon teal">📊</div>
+          <div class="rl-info"><div class="rl-name">Export CSV</div><div class="rl-desc">Download as spreadsheet</div></div>
+          <div class="rl-arrow">›</div>
+        </div>
+        <div class="rl-item" onclick="showExportModal()">
+          <div class="rl-icon red">📄</div>
+          <div class="rl-info"><div class="rl-name">Export PDF</div><div class="rl-desc">Download tax report</div></div>
+          <div class="rl-arrow">›</div>
+        </div>
       </div>
-      <div class="info-card">
-        <p>💡 Log miles when adding income. Miles are automatically counted here for your tax deduction.</p>
-      </div>
+
+      <!-- Tax Quarters -->
+      <div class="section-header"><div class="section-title" id="taxYearLabel">2026 Quarterly Tax</div></div>
+      <div id="quarterCards" style="padding:0 16px 16px"></div>
     </div>
   </div>
 
-  <!-- Charts -->
-  <div id="chartsPage" class="page">
-    <div class="app-header">
-      <h2>Charts</h2>
-    </div>
-    <div class="page-content">
-      <div class="section-card">
-        <h3 class="section-title">Monthly Income vs Expenses</h3>
-        <div class="chart-legend">
-          <span class="legend-item green">■ Income</span>
-          <span class="legend-item red">■ Expenses</span>
-          <span class="legend-item blue">— Profit</span>
-        </div>
-        <canvas id="monthlyChart" class="chart-canvas"></canvas>
-      </div>
-      <div class="section-card">
-        <h3 class="section-title">Income by Platform</h3>
-        <canvas id="platformDonut" class="chart-canvas"></canvas>
-      </div>
-      <div class="section-card">
-        <h3 class="section-title">Expenses by Category</h3>
-        <canvas id="expenseDonut" class="chart-canvas"></canvas>
-      </div>
-      <div class="section-card">
-        <h3 class="section-title">Avg Hourly Rate by Platform</h3>
-        <canvas id="hourlyChart" class="chart-canvas"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tax Summary -->
-  <div id="taxPage" class="page">
-    <div class="app-header">
-      <h2>Tax Summary</h2>
-      <span id="taxYear" class="header-year"></span>
-    </div>
-    <div class="page-content">
-      <div id="taxSummaryContent">
-        <p class="empty-state loading">Loading...</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Profile -->
+  <!-- PROFILE -->
   <div id="profilePage" class="page">
     <div class="app-header">
-      <h2>Profile</h2>
+      <div class="app-header-row"><h2>Profile</h2></div>
     </div>
-    <div class="page-content">
-      <div class="profile-avatar-section">
-        <div class="profile-avatar">👤</div>
-        <h2 id="profileName">Driver</h2>
-        <p id="profileEmail" class="profile-email"></p>
+    <div class="page-scroll" style="padding-top:0">
+      <div class="profile-hero">
+        <div class="profile-av">👤</div>
+        <div>
+          <div class="profile-name" id="profileName">Driver</div>
+          <div class="profile-email" id="profileEmail"></div>
+        </div>
       </div>
-      <div class="settings-section">
-        <h3>Account Info</h3>
-        <div class="settings-card">
-          <div class="settings-row">
-            <span class="settings-label">Country</span>
-            <span id="profileCountry" class="settings-value">🇺🇸 United States</span>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Preferences</div>
+        <div class="settings-list">
+          <div class="settings-item">
+            <div class="si-icon teal">🎯</div>
+            <div class="si-content"><div class="si-label">Monthly Goal</div></div>
+            <div class="si-right"><span id="siGoal">$0</span> ›</div>
           </div>
-          <div class="settings-row">
-            <span class="settings-label">Currency</span>
-            <span id="profileCurrency" class="settings-value">USD</span>
+          <div class="settings-item">
+            <div class="si-icon blue">💱</div>
+            <div class="si-content"><div class="si-label">Currency</div></div>
+            <div class="si-right"><span id="siCurrency">USD</span> ›</div>
           </div>
-          <div class="settings-row">
-            <span class="settings-label">Monthly Goal</span>
-            <span id="profileGoal" class="settings-value">$0</span>
-          </div>
-          <div class="settings-row">
-            <span class="settings-label">Platforms</span>
-            <span id="profilePlatforms" class="settings-value">-</span>
+          <div class="settings-item" onclick="toggleTheme()">
+            <div class="si-icon purple">🌙</div>
+            <div class="si-content"><div class="si-label">Theme</div></div>
+            <div class="si-right" id="siTheme">Dark ›</div>
           </div>
         </div>
       </div>
-      <div class="settings-section">
-        <h3>App</h3>
-        <div class="settings-card">
-          <div class="settings-row" onclick="toggleTheme()">
-            <span class="settings-label">Theme</span>
-            <span class="settings-value">Toggle Dark/Light</span>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Platforms</div>
+        <div class="settings-list">
+          <div class="platform-chips" id="profilePlatforms"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Data & Export</div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="showExportModal()">
+            <div class="si-icon teal">📤</div>
+            <div class="si-content"><div class="si-label">Export Data</div><div class="si-value">PDF or CSV</div></div>
+            <div class="si-right">›</div>
           </div>
-          <div class="settings-row" onclick="startOnboarding()">
-            <span class="settings-label">Redo Setup</span>
-            <span class="settings-value">→</span>
+          <div class="settings-item" onclick="startOnboarding()">
+            <div class="si-icon gray">🔄</div>
+            <div class="si-content"><div class="si-label">Reset Setup</div><div class="si-value">Redo onboarding</div></div>
+            <div class="si-right">›</div>
           </div>
         </div>
       </div>
-      <div class="settings-section">
-        <h3>Export</h3>
-        <div class="settings-card">
-          <div class="settings-row" onclick="showExportModal()">
-            <span class="settings-label">📤 Export Data</span>
-            <span class="settings-value">PDF or CSV →</span>
+
+      <div class="settings-group">
+        <div class="settings-group-label">Legal</div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="window.open('/GigProfit/privacy.html')">
+            <div class="si-icon gray">🔒</div>
+            <div class="si-content"><div class="si-label">Privacy Policy</div></div>
+            <div class="si-right">›</div>
+          </div>
+          <div class="settings-item" onclick="window.open('/GigProfit/terms.html')">
+            <div class="si-icon gray">📜</div>
+            <div class="si-content"><div class="si-label">Terms of Service</div></div>
+            <div class="si-right">›</div>
           </div>
         </div>
       </div>
-      <div class="settings-section">
-        <h3>Legal</h3>
-        <div class="settings-card">
-          <div class="settings-row" onclick="window.open('/GigProfit/privacy.html')">
-            <span class="settings-label">Privacy Policy</span>
-            <span class="settings-value">→</span>
-          </div>
-          <div class="settings-row" onclick="window.open('/GigProfit/terms.html')">
-            <span class="settings-label">Terms of Service</span>
-            <span class="settings-value">→</span>
-          </div>
-        </div>
-      </div>
-      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+
+      <button class="btn-logout" onclick="signOut()">
+        <span>→</span> Log Out
+      </button>
     </div>
   </div>
 
-  <!-- Bottom Nav -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="showPage('dashboard')">
-      <span class="nav-icon">⊞</span>
-      <span class="nav-label">Dashboard</span>
+    <button class="nav-btn active" onclick="showPage('home')" data-page="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span>Home</span>
     </button>
-    <button class="nav-item" onclick="showPage('income')">
-      <span class="nav-icon">$</span>
-      <span class="nav-label">Income</span>
+    <button class="nav-btn" onclick="showPage('earnings')" data-page="earnings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Earnings</span>
     </button>
-    <button class="nav-item" onclick="showPage('mileage')">
-      <span class="nav-icon">🚗</span>
-      <span class="nav-label">Mileage</span>
+    <button class="nav-btn" onclick="showPage('expenses')" data-page="expenses">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Expenses</span>
     </button>
-    <button class="nav-item" onclick="showPage('expenses')">
-      <span class="nav-icon">📋</span>
-      <span class="nav-label">Expenses</span>
+    <button class="nav-btn" onclick="showPage('reports')" data-page="reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Reports</span>
     </button>
-    <button class="nav-item" onclick="showPage('charts')">
-      <span class="nav-icon">📈</span>
-      <span class="nav-label">Charts</span>
-    </button>
-    <button class="nav-item" onclick="showPage('tax')">
-      <span class="nav-icon">🧾</span>
-      <span class="nav-label">Tax</span>
-    </button>
-    <button class="nav-item" onclick="showPage('profile')">
-      <span class="nav-icon">👤</span>
-      <span class="nav-label">Profile</span>
+    <button class="nav-btn" onclick="showPage('profile')" data-page="profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
     </button>
   </nav>
 </div>
 
-<!-- ── INCOME MODAL ───────────────────────── -->
+<!-- INCOME MODAL -->
 <div id="incomeModal" class="modal-overlay" onclick="if(event.target===this)closeModal('incomeModal')">
   <div class="modal">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <h3 id="incomeModalTitle">Log Income</h3>
       <button class="modal-close" onclick="closeModal('incomeModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Platform</label>
-        <select id="incomePlatform">
-          <option>Uber</option><option>Lyft</option><option>DoorDash</option>
-          <option>Instacart</option><option>Amazon Flex</option><option>Uber Eats</option>
-          <option>Grubhub</option><option>Spark</option><option>Other</option>
-        </select>
+      <div class="form-group"><label>Platform</label>
+        <select id="incomePlatform"><option>Uber</option><option>Lyft</option><option>DoorDash</option><option>Instacart</option><option>Amazon Flex</option><option>Uber Eats</option><option>Grubhub</option><option>Spark</option><option>Other</option></select>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label>Earnings ($)</label>
-          <input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0">
-        </div>
-        <div class="form-group">
-          <label>Tips ($)</label>
-          <input type="number" id="incomeTips" placeholder="0.00" step="0.01" min="0">
-        </div>
+        <div class="form-group"><label>Earnings ($)</label><input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="form-group"><label>Tips ($)</label><input type="number" id="incomeTips" placeholder="0.00" step="0.01" min="0"></div>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label>Hours</label>
-          <input type="number" id="incomeHours" placeholder="0.0" step="0.5" min="0">
-        </div>
-        <div class="form-group">
-          <label>Miles 🚗</label>
-          <input type="number" id="incomeMiles" placeholder="0" step="0.1" min="0">
-        </div>
+        <div class="form-group"><label>Hours</label><input type="number" id="incomeHours" placeholder="0.0" step="0.5" min="0"></div>
+        <div class="form-group"><label>Miles</label><input type="number" id="incomeMiles" placeholder="0" step="0.1" min="0"></div>
       </div>
-      <div class="form-group">
-        <label>Date</label>
-        <input type="date" id="incomeDate">
-      </div>
-      <div class="form-group">
-        <label>Notes (optional)</label>
-        <input type="text" id="incomeNotes" placeholder="e.g. Airport runs">
-      </div>
+      <div class="form-group"><label>Date</label><input type="date" id="incomeDate"></div>
+      <div class="form-group"><label>Notes</label><input type="text" id="incomeNotes" placeholder="Optional"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('incomeModal')">Cancel</button>
@@ -457,35 +500,21 @@
   </div>
 </div>
 
-<!-- ── EXPENSE MODAL ──────────────────────── -->
+<!-- EXPENSE MODAL -->
 <div id="expenseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('expenseModal')">
   <div class="modal">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <h3 id="expenseModalTitle">Add Expense</h3>
       <button class="modal-close" onclick="closeModal('expenseModal')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Category</label>
-        <select id="expenseCategory">
-          <option>Gas</option><option>Car Repair</option><option>Car Wash</option>
-          <option>Insurance</option><option>Phone Bill</option><option>Phone Mount</option>
-          <option>Food & Drinks</option><option>Parking</option><option>Tolls</option>
-          <option>Other</option>
-        </select>
+      <div class="form-group"><label>Category</label>
+        <select id="expenseCategory"><option>Gas</option><option>Car Repair</option><option>Car Wash</option><option>Insurance</option><option>Phone Bill</option><option>Tolls</option><option>Parking</option><option>Food & Drinks</option><option>Other</option></select>
       </div>
-      <div class="form-group">
-        <label>Amount ($)</label>
-        <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
-      </div>
-      <div class="form-group">
-        <label>Date</label>
-        <input type="date" id="expenseDate">
-      </div>
-      <div class="form-group">
-        <label>Notes (optional)</label>
-        <input type="text" id="expenseNotes" placeholder="e.g. Shell station">
-      </div>
+      <div class="form-group"><label>Amount ($)</label><input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="expenseDate"></div>
+      <div class="form-group"><label>Notes</label><input type="text" id="expenseNotes" placeholder="Optional"></div>
       <div class="form-check">
         <input type="checkbox" id="expenseDeductible" checked>
         <label for="expenseDeductible">Tax deductible expense</label>
@@ -498,73 +527,41 @@
   </div>
 </div>
 
-<!-- ── EXPORT MODAL ──────────────────────────── -->
+<!-- EXPORT MODAL -->
 <div id="exportModal" class="modal-overlay" onclick="if(event.target===this)closeModal('exportModal')">
   <div class="modal">
+    <div class="modal-handle"></div>
     <div class="modal-header">
       <h3>Export Data</h3>
       <button class="modal-close" onclick="closeModal('exportModal')">✕</button>
     </div>
     <div class="modal-body">
-
-      <div class="form-group">
-        <label>Date Range</label>
-        <div class="form-row">
-          <div class="form-group">
-            <label>From</label>
-            <input type="date" id="exportDateFrom">
-          </div>
-          <div class="form-group">
-            <label>To</label>
-            <input type="date" id="exportDateTo">
-          </div>
+      <div class="form-group"><label>Quick Select</label>
+        <div class="range-chips">
+          <button class="range-chip active" onclick="setRange('this-month',this)">This Month</button>
+          <button class="range-chip" onclick="setRange('last-month',this)">Last Month</button>
+          <button class="range-chip" onclick="setRange('this-quarter',this)">This Quarter</button>
+          <button class="range-chip" onclick="setRange('this-year',this)">This Year</button>
+          <button class="range-chip" onclick="setRange('all-time',this)">All Time</button>
         </div>
       </div>
-
-      <div class="form-group">
-        <label>Quick Select</label>
-        <div class="quick-range-btns">
-          <button class="btn-range" onclick="setExportRange('this-month')">This Month</button>
-          <button class="btn-range" onclick="setExportRange('last-month')">Last Month</button>
-          <button class="btn-range" onclick="setExportRange('this-quarter')">This Quarter</button>
-          <button class="btn-range" onclick="setExportRange('this-year')">This Year</button>
-          <button class="btn-range" onclick="setExportRange('last-year')">Last Year</button>
-          <button class="btn-range" onclick="setExportRange('all-time')">All Time</button>
+      <div class="form-row">
+        <div class="form-group"><label>From</label><input type="date" id="exportFrom"></div>
+        <div class="form-group"><label>To</label><input type="date" id="exportTo"></div>
+      </div>
+      <div class="form-group"><label>Data</label>
+        <div class="radio-opts">
+          <label class="radio-opt"><input type="radio" name="expData" value="all" checked><span>All Data</span></label>
+          <label class="radio-opt"><input type="radio" name="expData" value="income"><span>Income Only</span></label>
+          <label class="radio-opt"><input type="radio" name="expData" value="expenses"><span>Expenses Only</span></label>
         </div>
       </div>
-
-      <div class="form-group">
-        <label>What to Export</label>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input type="radio" name="exportData" value="all" checked>
-            <span>All Data (Income + Expenses)</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="exportData" value="income">
-            <span>Income Only</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="exportData" value="expenses">
-            <span>Expenses Only</span>
-          </label>
+      <div class="form-group"><label>Format</label>
+        <div class="radio-opts">
+          <label class="radio-opt"><input type="radio" name="expFmt" value="pdf" checked><span>📄 PDF Tax Report</span></label>
+          <label class="radio-opt"><input type="radio" name="expFmt" value="csv"><span>📊 CSV Spreadsheet</span></label>
         </div>
       </div>
-
-      <div class="form-group">
-        <label>Format</label>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input type="radio" name="exportFormat" value="pdf" checked>
-            <span>📄 PDF Tax Report (print/save)</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="exportFormat" value="csv">
-            <span>📊 CSV Spreadsheet (for accountant)</span>
-          </label>
-        </div>
-      </div>
-
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
@@ -575,16 +572,10 @@
 
 <script src="/GigProfit/js/app.js"></script>
 <script>
-  // Show splash then init
   window.addEventListener('load', () => {
-    setTimeout(() => {
-      document.getElementById('splashPage').classList.remove('active');
-    }, 1800);
+    setTimeout(() => { document.getElementById('splashPage').classList.remove('active'); }, 1800);
   });
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/GigProfit/sw.js');
-  }
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/GigProfit/sw.js'); }
 </script>
 </body>
 </html>
