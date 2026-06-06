@@ -713,20 +713,21 @@ async function loadWeeklyChart() {
   const maxVal = Math.max(...incData, 1);
 
   // Clear canvas
-  const W = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-  const H = canvas.height = 180 * window.devicePixelRatio;
-  canvas.style.height = '180px';
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const dpr = window.devicePixelRatio || 1;
   const w = canvas.offsetWidth;
-  const h = 180;
+  const h = 200;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
 
   ctx.clearRect(0, 0, w, h);
 
-  const padL = 8, padR = 8, padT = 16, padB = 36;
+  const padL = 8, padR = 8, padT = 28, padB = 40;
   const chartW = w - padL - padR;
   const chartH = h - padT - padB;
-  const barW = (chartW / 7) * 0.5;
   const gap = chartW / 7;
+  const barW = gap * 0.45;
 
   // Draw bars
   days.forEach((d, i) => {
@@ -756,7 +757,7 @@ async function loadWeeklyChart() {
     // Amount label above bar
     if (incData[i] > 0) {
       ctx.fillStyle = '#00d4aa';
-      ctx.font = `bold ${10 * (w/375)}px DM Sans, sans-serif`;
+      ctx.font = `bold 10px DM Sans, sans-serif`;
       ctx.textAlign = 'center';
       const sym = cur === 'CAD' ? 'C$' : '$';
       ctx.fillText(sym + incData[i].toFixed(0), x + barW/2, padT + chartH - incH - 4);
@@ -764,7 +765,7 @@ async function loadWeeklyChart() {
 
     // Day label
     ctx.fillStyle = isToday ? '#00d4aa' : 'rgba(255,255,255,0.5)';
-    ctx.font = `${isToday ? 'bold ' : ''}${11 * (w/375)}px DM Sans, sans-serif`;
+    ctx.font = `${isToday ? 'bold ' : ''}11px DM Sans, sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(labels[i], x + barW/2, h - 8);
 
@@ -849,7 +850,7 @@ async function loadMileagePage() {
           <div class="mileage-rate-value">${isCAD ? 'CA$0.70' : '$0.67'}<span>/mile</span></div>
           <div class="mileage-rate-note">Standard ${isCAD ? 'CRA' : 'IRS'} mileage deduction rate</div>
         </div>
-        <div class="mileage-rate-badge">2024</div>
+        <div class="mileage-rate-badge">${now.getFullYear()}</div>
       </div>
     </div>
 
