@@ -231,3 +231,13 @@ button { cursor: pointer; border: none; background: none; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
+
+/* ── EXPORT MODAL ───────────────────────────── */
+.quick-range-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-range { padding: 7px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; color: var(--text2); font-size: 0.82rem; transition: all 0.2s; }
+.btn-range.active, .btn-range:hover { background: rgba(0,212,170,0.15); border-color: var(--green); color: var(--green); }
+.radio-group { display: flex; flex-direction: column; gap: 10px; }
+.radio-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 14px; background: var(--bg3); border-radius: var(--radius-sm); border: 1px solid var(--border); transition: border-color 0.2s; }
+.radio-option:has(input:checked) { border-color: var(--green); background: rgba(0,212,170,0.08); }
+.radio-option input[type="radio"] { accent-color: var(--green); width: 16px; height: 16px; }
+.radio-option span { font-size: 0.9rem; }

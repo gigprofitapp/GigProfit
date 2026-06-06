@@ -304,6 +304,15 @@
         </div>
       </div>
       <div class="settings-section">
+        <h3>Export</h3>
+        <div class="settings-card">
+          <div class="settings-row" onclick="showExportModal()">
+            <span class="settings-label">📤 Export Data</span>
+            <span class="settings-value">PDF or CSV →</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
         <h3>Legal</h3>
         <div class="settings-card">
           <div class="settings-row" onclick="window.open('/GigProfit/privacy.html')">
@@ -434,6 +443,81 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
       <button id="saveExpenseBtn" class="btn-primary" onclick="saveExpense()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EXPORT MODAL ──────────────────────────── -->
+<div id="exportModal" class="modal-overlay" onclick="if(event.target===this)closeModal('exportModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Export Data</h3>
+      <button class="modal-close" onclick="closeModal('exportModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>Date Range</label>
+        <div class="form-row">
+          <div class="form-group">
+            <label>From</label>
+            <input type="date" id="exportDateFrom">
+          </div>
+          <div class="form-group">
+            <label>To</label>
+            <input type="date" id="exportDateTo">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Quick Select</label>
+        <div class="quick-range-btns">
+          <button class="btn-range" onclick="setExportRange('this-month')">This Month</button>
+          <button class="btn-range" onclick="setExportRange('last-month')">Last Month</button>
+          <button class="btn-range" onclick="setExportRange('this-quarter')">This Quarter</button>
+          <button class="btn-range" onclick="setExportRange('this-year')">This Year</button>
+          <button class="btn-range" onclick="setExportRange('last-year')">Last Year</button>
+          <button class="btn-range" onclick="setExportRange('all-time')">All Time</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>What to Export</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="exportData" value="all" checked>
+            <span>All Data (Income + Expenses)</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="exportData" value="income">
+            <span>Income Only</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="exportData" value="expenses">
+            <span>Expenses Only</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Format</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="exportFormat" value="pdf" checked>
+            <span>📄 PDF Tax Report (print/save)</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="exportFormat" value="csv">
+            <span>📊 CSV Spreadsheet (for accountant)</span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
+      <button id="runExportBtn" class="btn-primary" onclick="runExport()">Export</button>
     </div>
   </div>
 </div>

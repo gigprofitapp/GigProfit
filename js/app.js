@@ -714,3 +714,335 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.classList.add('show'), 10);
   setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
 }
+
+// ── EXPORT ────────────────────────────────────────────────
+
+async function exportData(type) {
+  if (!currentUser) return;
+  showToast('Preparing export...', 'success');
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  // Fetch all data for current year
+  const [{ data: income }, { data: expenses }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id)
+      .gte('date', `${year}-01-01`).order('date', { ascending: false }),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id)
+      .gte('date', `${year}-01-01`).order('date', { ascending: false })
+  ]);
+
+  if (type === 'csv') exportCSV(income || [], expenses || [], year);
+  if (type === 'pdf') exportPDF(income || [], expenses || [], year);
+}
+
+function exportCSV(income, expenses, year) {
+  // Income CSV
+  const incomeRows = [
+    ['Date', 'Platform', 'Earnings', 'Tips', 'Total', 'Hours', 'Miles', 'Notes'],
+    ...income.map(r => [
+      r.date, r.platform,
+      parseFloat(r.amount).toFixed(2),
+      parseFloat(r.tips || 0).toFixed(2),
+      (parseFloat(r.amount) + parseFloat(r.tips || 0)).toFixed(2),
+      r.hours || '', r.miles || '', r.notes || ''
+    ])
+  ];
+
+  // Expense CSV
+  const expenseRows = [
+    ['Date', 'Category', 'Amount', 'Tax Deductible', 'Notes'],
+    ...expenses.map(r => [
+      r.date, r.category,
+      parseFloat(r.amount).toFixed(2),
+      r.is_deductible ? 'Yes' : 'No',
+      r.notes || ''
+    ])
+  ];
+
+  const totalIncome = income.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
+  const totalExpenses = expenses.reduce((s, r) => s + parseFloat(r.amount), 0);
+  const totalMiles = income.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
+  const mileageDeduction = totalMiles * 0.70;
+  const netProfit = totalIncome - totalExpenses;
+
+  const summaryRows = [
+    ['SUMMARY', ''],
+    ['Total Income', totalIncome.toFixed(2)],
+    ['Total Expenses', totalExpenses.toFixed(2)],
+    ['Total Miles', totalMiles.toFixed(1)],
+    ['Mileage Deduction', mileageDeduction.toFixed(2)],
+    ['Net Profit', netProfit.toFixed(2)],
+    ['Est. Self-Employment Tax (15.3%)', (netProfit * 0.9235 * 0.153).toFixed(2)]
+  ];
+
+  const csvContent = [
+    [`GIGPROFIT TAX REPORT - ${year}`],
+    [],
+    ['=== INCOME ==='],
+    ...incomeRows,
+    [],
+    ['=== EXPENSES ==='],
+    ...expenseRows,
+    [],
+    ['=== SUMMARY ==='],
+    ...summaryRows
+  ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+  downloadFile(`GigProfit-${year}-Tax-Report.csv`, csvContent, 'text/csv');
+  showToast('CSV exported!', 'success');
+}
+
+function exportPDF(income, expenses, year) {
+  const totalIncome = income.reduce((s, r) => s + parseFloat(r.amount) + parseFloat(r.tips || 0), 0);
+  const totalExpenses = expenses.reduce((s, r) => s + parseFloat(r.amount), 0);
+  const totalMiles = income.reduce((s, r) => s + parseFloat(r.miles || 0), 0);
+  const mileageDeduction = totalMiles * 0.70;
+  const netProfit = totalIncome - totalExpenses;
+  const taxRate = userProfile?.country === 'CA' ? 0.28 : 0.153;
+  const estTax = netProfit * 0.9235 * taxRate;
+  const name = userProfile?.full_name || currentUser.email;
+  const country = userProfile?.country === 'CA' ? 'Canada' : 'USA';
+
+  // Group income by platform
+  const byPlatform = {};
+  income.forEach(r => {
+    const p = r.platform;
+    if (!byPlatform[p]) byPlatform[p] = { amount: 0, tips: 0, miles: 0, hours: 0 };
+    byPlatform[p].amount += parseFloat(r.amount);
+    byPlatform[p].tips += parseFloat(r.tips || 0);
+    byPlatform[p].miles += parseFloat(r.miles || 0);
+    byPlatform[p].hours += parseFloat(r.hours || 0);
+  });
+
+  // Group expenses by category
+  const byCategory = {};
+  expenses.forEach(r => {
+    byCategory[r.category] = (byCategory[r.category] || 0) + parseFloat(r.amount);
+  });
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GigProfit Tax Report ${year}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #1a1a1a; padding: 32px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 3px solid #00d4aa; }
+  .logo { font-size: 22px; font-weight: 800; color: #00d4aa; }
+  .report-title { font-size: 14px; color: #666; margin-top: 4px; }
+  .meta { text-align: right; font-size: 11px; color: #666; }
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+  .summary-card { background: #f8f9fa; border-radius: 8px; padding: 14px; border-left: 4px solid #00d4aa; }
+  .summary-card.red { border-left-color: #ff4d4d; }
+  .summary-card.yellow { border-left-color: #ffa500; }
+  .summary-card.blue { border-left-color: #0066ff; }
+  .card-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .card-value { font-size: 18px; font-weight: 800; color: #1a1a1a; }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #e0e0e0; text-transform: uppercase; letter-spacing: 0.05em; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 700; color: #555; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  .amount { text-align: right; font-weight: 600; }
+  .positive { color: #00a87a; }
+  .negative { color: #cc3333; }
+  .footer { margin-top: 32px; padding-top: 12px; border-top: 1px solid #e0e0e0; font-size: 10px; color: #999; text-align: center; }
+  .disclaimer { background: #fff8e6; border: 1px solid #ffd980; border-radius: 6px; padding: 10px 14px; margin-top: 16px; font-size: 10px; color: #7a5c00; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">GigProfit</div>
+    <div class="report-title">Tax Summary Report — ${year}</div>
+  </div>
+  <div class="meta">
+    <div><strong>${name}</strong></div>
+    <div>${country}</div>
+    <div>Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+  </div>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="card-label">Total Income</div>
+    <div class="card-value positive">$${totalIncome.toFixed(2)}</div>
+  </div>
+  <div class="summary-card red">
+    <div class="card-label">Total Expenses</div>
+    <div class="card-value negative">$${totalExpenses.toFixed(2)}</div>
+  </div>
+  <div class="summary-card">
+    <div class="card-label">Net Profit</div>
+    <div class="card-value">$${netProfit.toFixed(2)}</div>
+  </div>
+  <div class="summary-card blue">
+    <div class="card-label">Total Miles</div>
+    <div class="card-value">${totalMiles.toFixed(1)} mi</div>
+  </div>
+  <div class="summary-card blue">
+    <div class="card-label">Mileage Deduction</div>
+    <div class="card-value">$${mileageDeduction.toFixed(2)}</div>
+  </div>
+  <div class="summary-card yellow">
+    <div class="card-label">Est. Tax Owed</div>
+    <div class="card-value">$${estTax.toFixed(2)}</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Income by Platform</div>
+  <table>
+    <tr><th>Platform</th><th>Earnings</th><th>Tips</th><th>Hours</th><th>Miles</th><th class="amount">Total</th></tr>
+    ${Object.entries(byPlatform).map(([p, d]) => `
+    <tr>
+      <td>${p}</td>
+      <td>$${d.amount.toFixed(2)}</td>
+      <td>$${d.tips.toFixed(2)}</td>
+      <td>${d.hours.toFixed(1)}h</td>
+      <td>${d.miles.toFixed(1)}</td>
+      <td class="amount positive">$${(d.amount + d.tips).toFixed(2)}</td>
+    </tr>`).join('')}
+    <tr style="font-weight:700;background:#f8f9fa">
+      <td>TOTAL</td><td colspan="4"></td>
+      <td class="amount positive">$${totalIncome.toFixed(2)}</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-title">Expenses by Category</div>
+  <table>
+    <tr><th>Category</th><th class="amount">Amount</th></tr>
+    ${Object.entries(byCategory).map(([cat, amt]) => `
+    <tr><td>${cat}</td><td class="amount negative">$${amt.toFixed(2)}</td></tr>
+    `).join('')}
+    <tr style="font-weight:700;background:#f8f9fa">
+      <td>TOTAL</td>
+      <td class="amount negative">$${totalExpenses.toFixed(2)}</td>
+    </tr>
+  </table>
+</div>
+
+<div class="disclaimer">
+  ⚠️ <strong>Disclaimer:</strong> This report is for informational purposes only and does not constitute tax advice. Tax estimates are approximations. Please consult a qualified tax professional for your specific situation.
+</div>
+
+<div class="footer">
+  Generated by GigProfit — gigprofitapp.github.io/GigProfit | ${new Date().getFullYear()}
+</div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 500);
+  showToast('PDF report opened — use Print to save as PDF', 'success');
+}
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── EXPORT MODAL ──────────────────────────────────────────
+
+function showExportModal() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+
+  // Set defaults
+  document.getElementById('exportDateFrom').value = `${year}-01-01`;
+  document.getElementById('exportDateTo').value = `${year}-${month}-${String(now.getDate()).padStart(2,'0')}`;
+  document.getElementById('exportModal').classList.add('active');
+}
+
+async function runExport() {
+  const format = document.querySelector('input[name="exportFormat"]:checked')?.value || 'pdf';
+  const dataType = document.querySelector('input[name="exportData"]:checked')?.value || 'all';
+  const dateFrom = document.getElementById('exportDateFrom').value;
+  const dateTo = document.getElementById('exportDateTo').value;
+  const btn = document.getElementById('runExportBtn');
+
+  if (!dateFrom || !dateTo) return showToast('Please select a date range', 'error');
+  if (dateFrom > dateTo) return showToast('Start date must be before end date', 'error');
+
+  setLoading(btn, true, 'Preparing...');
+
+  let income = [], expenses = [];
+
+  if (dataType === 'all' || dataType === 'income') {
+    const { data } = await db.from('gp_income').select('*')
+      .eq('user_id', currentUser.id)
+      .gte('date', dateFrom).lte('date', dateTo)
+      .order('date', { ascending: false });
+    income = data || [];
+  }
+
+  if (dataType === 'all' || dataType === 'expenses') {
+    const { data } = await db.from('gp_expenses').select('*')
+      .eq('user_id', currentUser.id)
+      .gte('date', dateFrom).lte('date', dateTo)
+      .order('date', { ascending: false });
+    expenses = data || [];
+  }
+
+  setLoading(btn, false, 'Export');
+
+  if (income.length === 0 && expenses.length === 0) {
+    showToast('No data found for selected range', 'error');
+    return;
+  }
+
+  const label = `${dateFrom} to ${dateTo}`;
+  closeModal('exportModal');
+
+  if (format === 'csv') exportCSV(income, expenses, label);
+  if (format === 'pdf') exportPDF(income, expenses, label);
+}
+
+function setExportRange(range) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  let from, to;
+
+  if (range === 'this-month') {
+    from = new Date(y, m, 1);
+    to = now;
+  } else if (range === 'last-month') {
+    from = new Date(y, m - 1, 1);
+    to = new Date(y, m, 0);
+  } else if (range === 'this-quarter') {
+    const q = Math.floor(m / 3);
+    from = new Date(y, q * 3, 1);
+    to = now;
+  } else if (range === 'this-year') {
+    from = new Date(y, 0, 1);
+    to = now;
+  } else if (range === 'last-year') {
+    from = new Date(y - 1, 0, 1);
+    to = new Date(y - 1, 11, 31);
+  } else if (range === 'all-time') {
+    from = new Date(2020, 0, 1);
+    to = now;
+  }
+
+  document.getElementById('exportDateFrom').value = from.toISOString().split('T')[0];
+  document.getElementById('exportDateTo').value = to.toISOString().split('T')[0];
+
+  // Highlight selected button
+  document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
