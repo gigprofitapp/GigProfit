@@ -1,301 +1,456 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#0a0f1e"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-title" content="GigProfit"/>
-  <title>GigProfit</title>
-  <link rel="manifest" href="manifest.json"/>
-  <link rel="stylesheet" href="css/styles.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GigProfit - Gig Worker Tracker</title>
+  <meta name="description" content="Track earnings, expenses, and real profit for Uber, DoorDash, Lyft, Instacart & more.">
+  <meta name="theme-color" content="#00d4aa">
+  <link rel="manifest" href="/GigProfit/manifest.json">
+  <link rel="apple-touch-icon" href="/GigProfit/icons/icon-192.png">
+  <link rel="stylesheet" href="/GigProfit/css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="theme-dark">
+<body>
 
-<!-- SPLASH -->
-<div id="splash-screen">
-  <div class="splash-logo">
-    <div class="splash-icon">
-      <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="url(#sg1)"/><path d="M15 24l6 6 12-12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="sg1" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#0066ff"/></linearGradient></defs></svg>
-    </div>
+<!-- ── SPLASH ─────────────────────────────── -->
+<div id="splashPage" class="page active splash-page">
+  <div class="splash-content">
+    <img src="/GigProfit/icons/icon-512.png" alt="GigProfit" class="splash-logo">
     <h1 class="splash-title">GigProfit</h1>
-    <p class="splash-sub">Built for gig workers</p>
+    <p class="splash-sub">Your real earnings. Simplified.</p>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
   </div>
-  <div class="splash-loader"><div class="splash-bar"></div></div>
 </div>
 
-<!-- AUTH -->
-<div id="auth-screen" style="display:none">
-  <div class="auth-bg"><div class="auth-blob blob-1"></div><div class="auth-blob blob-2"></div></div>
+<!-- ── AUTH ──────────────────────────────── -->
+<div id="authPage" class="page">
   <div class="auth-container">
-    <div class="auth-logo">
-      <div class="auth-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="url(#ag1)"/><path d="M15 24l6 6 12-12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="ag1" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00d4aa"/><stop offset="100%" stop-color="#0066ff"/></linearGradient></defs></svg></div>
-      <h1 class="brand-name">GigProfit</h1>
-      <p class="brand-tagline">Track your real earnings. Own your hustle.</p>
+    <div class="auth-header">
+      <img src="/GigProfit/icons/icon-192.png" alt="GigProfit" class="auth-logo">
+      <h1>GigProfit</h1>
+      <p>Track your real earnings. Own your hustle.</p>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="signin" onclick="switchTab('signin')">Sign In</button>
-      <button class="auth-tab" data-tab="signup" onclick="switchTab('signup')">Create Account</button>
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Create Account</button>
     </div>
-    <div id="signin-form" class="auth-form" style="display:flex;flex-direction:column;gap:14px">
-      <div class="form-group"><label>Email</label><input type="email" id="signin-email" placeholder="you@example.com"/></div>
-      <div class="form-group"><label>Password</label><div class="input-pw-wrap"><input type="password" id="signin-password" placeholder="••••••••"/><button class="pw-toggle" onclick="togglePw('signin-password',this)">👁</button></div></div>
-      <button class="btn-forgot" onclick="showForgotPassword()">Forgot password?</button>
-      <button class="btn-primary" id="signin-btn" onclick="signIn()">Sign In</button>
-      <div class="divider"><span>or</span></div>
-      <button class="btn-google" onclick="signInWithGoogle()"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-      <p id="auth-error" class="auth-error" style="display:none"></p>
+    <div id="loginForm" class="auth-form active">
+      <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+      <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+      <button id="signInBtn" class="btn-primary" onclick="signIn()">Sign In</button>
     </div>
-    <div id="signup-form" class="auth-form" style="display:none;flex-direction:column;gap:14px">
-      <div class="form-group"><label>Full Name</label><input type="text" id="signup-name" placeholder="Alex Johnson"/></div>
-      <div class="form-group"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com"/></div>
-      <div class="form-group"><label>Password</label><div class="input-pw-wrap"><input type="password" id="signup-password" placeholder="Min 6 characters"/><button class="pw-toggle" onclick="togglePw('signup-password',this)">👁</button></div></div>
-      <button class="btn-primary" id="signup-btn" onclick="signUp()">Create Account</button>
-      <div class="divider"><span>or</span></div>
-      <button class="btn-google" onclick="signInWithGoogle()"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
-      <p id="signup-error" class="auth-error" style="display:none"></p>
+    <div id="signupForm" class="auth-form">
+      <input type="text" id="signupName" placeholder="Full name" autocomplete="name">
+      <input type="email" id="signupEmail" placeholder="Email address" autocomplete="email">
+      <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <button id="signUpBtn" class="btn-primary" onclick="signUp()">Create Account</button>
+    </div>
+    <div class="auth-divider"><span>or</span></div>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <p class="auth-terms">By continuing you agree to our <a href="/GigProfit/privacy.html" target="_blank">Privacy Policy</a> and <a href="/GigProfit/terms.html" target="_blank">Terms of Service</a></p>
+  </div>
+</div>
+
+<!-- ── ONBOARDING ─────────────────────────── -->
+<div id="onboardingPage" class="page">
+  <div class="onboarding-container">
+    <div class="onboarding-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <!-- Step 1: Platforms -->
+    <div id="step1" class="onboarding-step active">
+      <div class="onboarding-icon">🚗</div>
+      <h2>Which platforms do you drive for?</h2>
+      <p>Select all that apply</p>
+      <div class="platform-grid">
+        <button class="platform-chip" onclick="togglePlatform(this, 'Uber')">🚕 Uber</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Lyft')">🩷 Lyft</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'DoorDash')">🍕 DoorDash</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Instacart')">🛒 Instacart</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Amazon Flex')">📦 Amazon Flex</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Uber Eats')">🍔 Uber Eats</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Grubhub')">🥡 Grubhub</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Spark')">⚡ Spark</button>
+        <button class="platform-chip" onclick="togglePlatform(this, 'Other')">➕ Other</button>
+      </div>
+      <button class="btn-primary" onclick="nextOnboarding(2)">Next →</button>
+    </div>
+
+    <!-- Step 2: Country & Currency -->
+    <div id="step2" class="onboarding-step">
+      <div class="onboarding-icon">🌍</div>
+      <h2>Where are you based?</h2>
+      <p>We'll use the right tax rates for your location</p>
+      <div class="form-group">
+        <label>Country</label>
+        <select id="countrySelect">
+          <option value="US">🇺🇸 United States</option>
+          <option value="CA">🇨🇦 Canada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Currency</label>
+        <select id="currencySelect">
+          <option value="USD">USD - US Dollar</option>
+          <option value="CAD">CAD - Canadian Dollar</option>
+        </select>
+      </div>
+      <div class="onboarding-nav">
+        <button class="btn-secondary" onclick="prevOnboarding(1)">← Back</button>
+        <button class="btn-primary" onclick="nextOnboarding(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Tax Status -->
+    <div id="step3" class="onboarding-step">
+      <div class="onboarding-icon">📋</div>
+      <h2>What's your tax filing status?</h2>
+      <p>Used for estimated tax calculations</p>
+      <div class="form-group">
+        <label>Filing Status</label>
+        <select id="taxStatus">
+          <option value="single">Single</option>
+          <option value="married">Married Filing Jointly</option>
+          <option value="hoh">Head of Household</option>
+        </select>
+      </div>
+      <div class="onboarding-nav">
+        <button class="btn-secondary" onclick="prevOnboarding(2)">← Back</button>
+        <button class="btn-primary" onclick="nextOnboarding(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Goal -->
+    <div id="step4" class="onboarding-step">
+      <div class="onboarding-icon">🎯</div>
+      <h2>What's your monthly income goal?</h2>
+      <p>Track your progress every day</p>
+      <div class="form-group">
+        <label>Monthly Goal ($)</label>
+        <input type="number" id="monthlyGoal" placeholder="e.g. 3000" value="3000" min="0">
+      </div>
+      <div class="onboarding-nav">
+        <button class="btn-secondary" onclick="prevOnboarding(3)">← Back</button>
+        <button id="finishOnboardingBtn" class="btn-primary" onclick="finishOnboarding()">Get Started →</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ONBOARDING -->
-<div id="onboarding-screen" style="display:none;padding:20px 20px 40px;flex-direction:column">
-  <div class="onboarding-progress">
-    <div class="progress-bar"><div class="progress-fill" id="ob-progress" style="width:0%"></div></div>
-    <span class="progress-label" id="ob-step-label">Step 1 of 4</span>
-  </div>
-  <div class="ob-step" id="ob-step-1" style="display:flex;flex-direction:column;gap:20px">
-    <div class="ob-icon">🚗</div><h2>Which platforms do you work for?</h2><p class="ob-sub">Select all that apply</p>
-    <div class="platform-grid">
-      <button class="platform-btn" data-platform="uber"><span class="platform-emoji">🚗</span><span>Uber</span></button>
-      <button class="platform-btn" data-platform="lyft"><span class="platform-emoji">🩷</span><span>Lyft</span></button>
-      <button class="platform-btn" data-platform="doordash"><span class="platform-emoji">🍔</span><span>DoorDash</span></button>
-      <button class="platform-btn" data-platform="instacart"><span class="platform-emoji">🛒</span><span>Instacart</span></button>
-      <button class="platform-btn" data-platform="amazon_flex"><span class="platform-emoji">📦</span><span>Amazon Flex</span></button>
-      <button class="platform-btn" data-platform="uber_eats"><span class="platform-emoji">🍕</span><span>Uber Eats</span></button>
-      <button class="platform-btn" data-platform="grubhub"><span class="platform-emoji">🥡</span><span>Grubhub</span></button>
-      <button class="platform-btn" data-platform="shipt"><span class="platform-emoji">🛍</span><span>Shipt</span></button>
-      <button class="platform-btn" data-platform="spark"><span class="platform-emoji">⚡</span><span>Spark</span></button>
-      <button class="platform-btn" data-platform="other"><span class="platform-emoji">➕</span><span>Other</span></button>
-    </div>
-    <button class="btn-primary ob-next" onclick="obNext(1)">Continue</button>
-  </div>
-  <div class="ob-step" id="ob-step-2" style="display:none;flex-direction:column;gap:20px">
-    <div class="ob-icon">🌎</div><h2>Where are you based?</h2><p class="ob-sub">Sets your currency and tax defaults</p>
-    <div class="ob-options">
-      <button class="ob-option-btn" data-country="US" data-currency="USD" onclick="selectCountry(this)"><span class="flag">🇺🇸</span><div><strong>United States</strong><small>USD — US Dollar</small></div><span class="checkmark">✓</span></button>
-      <button class="ob-option-btn" data-country="CA" data-currency="CAD" onclick="selectCountry(this)"><span class="flag">🇨🇦</span><div><strong>Canada</strong><small>CAD — Canadian Dollar</small></div><span class="checkmark">✓</span></button>
-    </div>
-    <button class="btn-primary ob-next" onclick="obNext(2)">Continue</button>
-  </div>
-  <div class="ob-step" id="ob-step-3" style="display:none;flex-direction:column;gap:20px">
-    <div class="ob-icon">📊</div><h2>Tax filing status</h2><p class="ob-sub">Used to estimate your self-employment tax</p>
-    <div class="ob-options">
-      <button class="ob-option-btn" data-tax="single" onclick="selectOption(this,'tax')"><span class="flag">👤</span><div><strong>Single</strong><small>Filing alone</small></div><span class="checkmark">✓</span></button>
-      <button class="ob-option-btn" data-tax="married_joint" onclick="selectOption(this,'tax')"><span class="flag">👫</span><div><strong>Married Filing Jointly</strong><small></small></div><span class="checkmark">✓</span></button>
-      <button class="ob-option-btn" data-tax="head" onclick="selectOption(this,'tax')"><span class="flag">🏠</span><div><strong>Head of Household</strong><small></small></div><span class="checkmark">✓</span></button>
-    </div>
-    <button class="btn-primary ob-next" onclick="obNext(3)">Continue</button>
-  </div>
-  <div class="ob-step" id="ob-step-4" style="display:none;flex-direction:column;gap:20px">
-    <div class="ob-icon">🎯</div><h2>Set a monthly income goal</h2><p class="ob-sub">We'll track your progress</p>
-    <div class="goal-input-wrap"><span class="goal-currency-symbol" id="goal-symbol">$</span><input type="number" id="monthly-goal" placeholder="3000" min="0"/><span class="goal-period">/mo</span></div>
-    <p class="goal-hint">You can change this anytime in Settings</p>
-    <button class="btn-primary ob-next" onclick="obFinish()">Start Tracking 🚀</button>
-  </div>
-</div>
+<!-- ── MAIN APP ────────────────────────────── -->
+<div id="appShell" class="app-shell" style="display:none">
 
-<!-- MAIN APP -->
-<div id="app-screen" style="display:none">
-  <header class="app-header">
-    <div class="header-left">
-      <div class="user-avatar" id="user-avatar">G</div>
-      <div class="header-greeting">
-        <span class="greeting-text" id="greeting-text">Good morning</span>
-        <span class="user-name" id="header-user-name">Driver</span>
+  <!-- Dashboard -->
+  <div id="dashboardPage" class="page">
+    <div class="app-header">
+      <div>
+        <p id="dashGreeting" class="greeting-text">Good morning</p>
+        <h2 id="dashName" class="header-name">Driver</h2>
       </div>
+      <button id="themeBtn" class="theme-btn" onclick="toggleTheme()">🌙</button>
     </div>
-    <div class="header-right">
-      <button class="icon-btn" onclick="toggleTheme()">🌙</button>
-    </div>
-  </header>
-
-  <main class="page-container">
-
-    <!-- DASHBOARD -->
-    <div class="page" id="page-dashboard" style="display:none">
-      <div class="period-toggle">
-        <button class="period-btn active" onclick="setPeriod('today',this)">Today</button>
-        <button class="period-btn" onclick="setPeriod('week',this)">Week</button>
-        <button class="period-btn" onclick="setPeriod('month',this)">Month</button>
+    <div class="page-content">
+      <div class="period-tabs">
+        <button class="period-btn active" onclick="setDashPeriod('today', this)">Today</button>
+        <button class="period-btn" onclick="setDashPeriod('week', this)">Week</button>
+        <button class="period-btn" onclick="setDashPeriod('month', this)">Month</button>
       </div>
-      <div class="hero-card">
-        <div class="hero-label">Real Profit</div>
-        <div class="hero-amount" id="dash-profit">$0</div>
-        <div class="hero-meta">
-          <span class="hero-meta-item">⏱ <span id="dash-hours">0h worked</span></span>
-          <span class="hero-meta-item">💵 <span id="dash-pph">$0/hr</span></span>
+      <div class="profit-card">
+        <p class="profit-label">REAL PROFIT</p>
+        <h1 id="realProfit" class="profit-amount">$0.00</h1>
+        <div class="profit-meta">
+          <span id="hoursWorked"></span>
+          <span id="hourlyRate"></span>
         </div>
-        <div class="goal-track" id="goal-track" style="display:none">
-          <div class="goal-track-bar"><div class="goal-track-fill" id="goal-track-fill" style="width:0%"></div></div>
-          <span class="goal-track-label" id="goal-track-label">0% of monthly goal</span>
+        <div class="goal-bar"><div id="goalProgress" class="goal-fill" style="width:0%"></div></div>
+        <p id="goalText" class="goal-text"></p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">GROSS INCOME</p>
+          <p id="grossIncome" class="stat-value positive">$0</p>
         </div>
-      </div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-label">Gross Income</div><div class="stat-value income" id="dash-income">$0</div></div>
-        <div class="stat-card"><div class="stat-label">Expenses</div><div class="stat-value expense" id="dash-expenses">$0</div></div>
-        <div class="stat-card"><div class="stat-label">Est. Tax</div><div class="stat-value tax" id="dash-tax">$0</div></div>
-      </div>
-
-      <!-- WEEKLY CHART -->
-      <div class="section-card">
-        <div class="section-header">
-          <h3>7-Day Earnings</h3>
-          <span class="chart-legend"><span class="legend-dot income"></span>Income <span class="legend-dot expense" style="margin-left:8px"></span>Expenses</span>
+        <div class="stat-card">
+          <p class="stat-label">EXPENSES</p>
+          <p id="totalExpenses" class="stat-value negative">$0</p>
         </div>
-        <p class="chart-week-total" id="chart-week-total">Loading…</p>
-        <canvas id="earnings-chart" style="width:100%;display:block"></canvas>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header"><h3>By Platform</h3><span class="section-period-label" id="platform-period-label">Today</span></div>
-        <div id="platform-breakdown"><div class="empty-state-sm">No income logged yet</div></div>
+        <div class="stat-card full-width">
+          <p class="stat-label">EST. TAX</p>
+          <p id="estTax" class="stat-value warning">$0</p>
+        </div>
       </div>
       <div class="section-card">
-        <div class="section-header"><h3>Recent Activity</h3><button class="link-btn" onclick="showPage('income')">See all</button></div>
-        <div id="recent-activity"><div class="empty-state-sm">Log your first trip or delivery</div></div>
+        <h3 class="section-title">7-Day Earnings</h3>
+        <canvas id="earningsChart" width="340" height="160"></canvas>
       </div>
-      <div class="quick-actions">
-        <button class="quick-btn income-btn" onclick="showPage('income');openAddIncome()"><span class="quick-btn-icon">+</span><span>Log Income</span></button>
-        <button class="quick-btn expense-btn" onclick="showPage('expenses');openAddExpense()"><span class="quick-btn-icon">+</span><span>Log Expense</span></button>
+      <div class="section-card">
+        <h3 class="section-title">By Platform</h3>
+        <div id="platformBreakdown"></div>
+      </div>
+      <div class="section-card">
+        <h3 class="section-title">Recent Activity</h3>
+        <div id="recentActivity"></div>
       </div>
     </div>
+  </div>
 
-    <!-- INCOME -->
-    <div class="page" id="page-income" style="display:none">
-      <div class="page-title-row"><h2 class="page-title">Income</h2><button class="btn-add" onclick="openAddIncome()">+ Add</button></div>
-      <div class="income-summary-strip">
-        <div class="strip-item"><span class="strip-label">This Month</span><span class="strip-value income" id="income-month-total">$0</span></div>
-        <div class="strip-divider"></div>
-        <div class="strip-item"><span class="strip-label">Miles</span><span class="strip-value" id="income-month-miles">0 mi</span></div>
-        <div class="strip-divider"></div>
-        <div class="strip-item"><span class="strip-label">Tips</span><span class="strip-value income" id="income-month-tips">$0</span></div>
-      </div>
-      <div id="income-list"><div class="empty-state"><div class="empty-icon">💰</div><h3>No income logged</h3><p>Tap "+ Add" to log your first earnings</p></div></div>
+  <!-- Income -->
+  <div id="incomePage" class="page">
+    <div class="app-header">
+      <h2>Income</h2>
+      <button class="btn-add" onclick="showAddIncome()">+ Add</button>
     </div>
-
-    <!-- EXPENSES -->
-    <div class="page" id="page-expenses" style="display:none">
-      <div class="page-title-row"><h2 class="page-title">Expenses</h2><button class="btn-add" onclick="openAddExpense()">+ Add</button></div>
-      <div class="income-summary-strip">
-        <div class="strip-item"><span class="strip-label">This Month</span><span class="strip-value expense" id="expense-month-total">$0</span></div>
-        <div class="strip-divider"></div>
-        <div class="strip-item"><span class="strip-label">Gas</span><span class="strip-value" id="expense-month-gas">$0</span></div>
-        <div class="strip-divider"></div>
-        <div class="strip-item"><span class="strip-label">Deductible</span><span class="strip-value income" id="expense-deductible">$0</span></div>
-      </div>
-      <div id="expense-list"><div class="empty-state"><div class="empty-icon">🧾</div><h3>No expenses logged</h3><p>Track gas, repairs, insurance & more</p></div></div>
+    <div class="page-content">
+      <div id="incomeList"></div>
     </div>
+  </div>
 
-    <!-- MILEAGE -->
-    <div class="page" id="page-mileage" style="display:none">
-      <div class="page-title-row"><h2 class="page-title">Mileage</h2></div>
-      <div id="mileage-content"><div class="empty-state"><div class="empty-icon">🚗</div><h3>Loading mileage…</h3></div></div>
+  <!-- Expenses -->
+  <div id="expensesPage" class="page">
+    <div class="app-header">
+      <h2>Expenses</h2>
+      <button class="btn-add" onclick="showAddExpense()">+ Add</button>
     </div>
+    <div class="page-content">
+      <div id="expenseList"></div>
+    </div>
+  </div>
 
-    <!-- SETTINGS -->
-    <div class="page" id="page-settings" style="display:none">
-      <div class="page-title-row"><h2 class="page-title">Settings</h2></div>
-      <div class="settings-profile-card">
-        <div class="settings-avatar" id="settings-avatar">G</div>
-        <div class="settings-profile-info"><div class="settings-name" id="settings-name">Driver</div><div class="settings-email" id="settings-email">—</div></div>
-      </div>
-      <div class="settings-group">
-        <div class="settings-group-label">Preferences</div>
-        <div class="settings-card">
-          <div class="settings-row" onclick="openGoalEdit()"><span class="settings-row-icon">🎯</span><div class="settings-row-content"><span class="settings-row-title">Monthly Goal</span><span class="settings-row-value" id="settings-goal-display">$0</span></div><span class="settings-chevron">›</span></div>
-          <div class="settings-row-divider"></div>
-          <div class="settings-row"><span class="settings-row-icon">🌙</span><div class="settings-row-content"><span class="settings-row-title">Dark Mode</span></div><label class="toggle-switch"><input type="checkbox" id="dark-mode-toggle" onchange="toggleThemeFromSwitch(this)"/><span class="toggle-slider"></span></label></div>
+  <!-- Mileage -->
+  <div id="mileagePage" class="page">
+    <div class="app-header">
+      <h2>Mileage</h2>
+    </div>
+    <div class="page-content">
+      <div class="mileage-hero">
+        <div class="mileage-main">
+          <span id="monthMiles" class="miles-big">0</span>
+          <span id="monthUnit" class="miles-unit">mi</span>
+          <p class="miles-label">this month</p>
+        </div>
+        <div class="mileage-deduction">
+          <p class="deduction-label">Est. Tax Deduction</p>
+          <p id="monthDeduction" class="deduction-amt">$0.00</p>
+          <p id="irsRate" class="irs-rate">$0.70/mile (IRS 2026)</p>
         </div>
       </div>
-      <div class="settings-group">
-        <div class="settings-group-label">Account</div>
-        <div class="settings-card">
-          <div class="settings-row danger-row" onclick="confirmSignOut()"><span class="settings-row-icon">🚪</span><div class="settings-row-content"><span class="settings-row-title">Sign Out</span></div></div>
+      <div class="stats-grid">
+        <div class="stat-card full-width">
+          <p class="stat-label"><span id="mileageYear">2026</span> YEAR TO DATE</p>
+          <p id="yearMiles" class="stat-value">0 mi · <span id="yearDeduction">$0</span> est. deduction</p>
         </div>
       </div>
-      <div class="settings-group">
-        <div class="settings-group-label">About</div>
-        <div class="settings-card">
-          <div class="settings-row"><span class="settings-row-icon">📱</span><div class="settings-row-content"><span class="settings-row-title">GigProfit</span><span class="settings-row-value">Version 2.0.0</span></div></div>
-        </div>
+      <div class="section-card">
+        <h3 class="section-title">Trips This Month</h3>
+        <div id="tripsList"></div>
       </div>
-      <div class="app-version-footer">GigProfit © 2025 MoneyTrack Apps</div>
+      <div class="info-card">
+        <p>💡 Log miles when adding income. Miles are automatically counted here for your tax deduction.</p>
+      </div>
     </div>
-  </main>
+  </div>
 
+  <!-- Profile -->
+  <div id="profilePage" class="page">
+    <div class="app-header">
+      <h2>Profile</h2>
+    </div>
+    <div class="page-content">
+      <div class="profile-avatar-section">
+        <div class="profile-avatar">👤</div>
+        <h2 id="profileName">Driver</h2>
+        <p id="profileEmail" class="profile-email"></p>
+      </div>
+      <div class="settings-section">
+        <h3>Account Info</h3>
+        <div class="settings-card">
+          <div class="settings-row">
+            <span class="settings-label">Country</span>
+            <span id="profileCountry" class="settings-value">🇺🇸 United States</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Currency</span>
+            <span id="profileCurrency" class="settings-value">USD</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Monthly Goal</span>
+            <span id="profileGoal" class="settings-value">$0</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Platforms</span>
+            <span id="profilePlatforms" class="settings-value">-</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>App</h3>
+        <div class="settings-card">
+          <div class="settings-row" onclick="toggleTheme()">
+            <span class="settings-label">Theme</span>
+            <span class="settings-value">Toggle Dark/Light</span>
+          </div>
+          <div class="settings-row" onclick="startOnboarding()">
+            <span class="settings-label">Redo Setup</span>
+            <span class="settings-value">→</span>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Legal</h3>
+        <div class="settings-card">
+          <div class="settings-row" onclick="window.open('/GigProfit/privacy.html')">
+            <span class="settings-label">Privacy Policy</span>
+            <span class="settings-value">→</span>
+          </div>
+          <div class="settings-row" onclick="window.open('/GigProfit/terms.html')">
+            <span class="settings-label">Terms of Service</span>
+            <span class="settings-value">→</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Dashboard</span></button>
-    <button class="nav-btn" data-page="income" onclick="showPage('income')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Income</span></button>
-    <button class="nav-btn" data-page="mileage" onclick="showPage('mileage')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Mileage</span></button>
-    <button class="nav-btn" data-page="expenses" onclick="showPage('expenses')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg><span>Expenses</span></button>
-    <button class="nav-btn" data-page="settings" onclick="showPage('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg><span>Profile</span></button>
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">⊞</span>
+      <span class="nav-label">Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="showPage('income')">
+      <span class="nav-icon">$</span>
+      <span class="nav-label">Income</span>
+    </button>
+    <button class="nav-item" onclick="showPage('mileage')">
+      <span class="nav-icon">🚗</span>
+      <span class="nav-label">Mileage</span>
+    </button>
+    <button class="nav-item" onclick="showPage('expenses')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Expenses</span>
+    </button>
+    <button class="nav-item" onclick="showPage('profile')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </button>
   </nav>
 </div>
 
-<!-- ADD INCOME MODAL -->
-<div id="add-income-modal" style="display:none" class="modal-overlay">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-header"><h3 id="income-modal-title">Log Income</h3><button class="modal-close" onclick="closeModal('add-income-modal')">✕</button></div>
+<!-- ── INCOME MODAL ───────────────────────── -->
+<div id="incomeModal" class="modal-overlay" onclick="if(event.target===this)closeModal('incomeModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="incomeModalTitle">Log Income</h3>
+      <button class="modal-close" onclick="closeModal('incomeModal')">✕</button>
+    </div>
     <div class="modal-body">
-      <div class="form-group"><label>Platform</label><select id="income-platform" class="form-select"><option value="">Select platform…</option></select></div>
-      <div class="form-row">
-        <div class="form-group"><label>Base Pay ($)</label><input type="number" id="income-amount" placeholder="0.00" min="0" step="0.01"/></div>
-        <div class="form-group"><label>Tips ($)</label><input type="number" id="income-tips" placeholder="0.00" min="0" step="0.01"/></div>
+      <div class="form-group">
+        <label>Platform</label>
+        <select id="incomePlatform">
+          <option>Uber</option><option>Lyft</option><option>DoorDash</option>
+          <option>Instacart</option><option>Amazon Flex</option><option>Uber Eats</option>
+          <option>Grubhub</option><option>Spark</option><option>Other</option>
+        </select>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Hours</label><input type="number" id="income-hours" placeholder="0.0" min="0" step="0.5"/></div>
-        <div class="form-group"><label>Miles 🚗</label><input type="number" id="income-miles" placeholder="0" min="0"/></div>
+        <div class="form-group">
+          <label>Earnings ($)</label>
+          <input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+          <label>Tips ($)</label>
+          <input type="number" id="incomeTips" placeholder="0.00" step="0.01" min="0">
+        </div>
       </div>
-      <div class="form-group"><label>Date</label><input type="date" id="income-date"/></div>
-      <div class="form-group"><label>Notes</label><input type="text" id="income-notes" placeholder="e.g. busy night shift"/></div>
-      <button class="btn-primary" onclick="saveIncome()">Save Income</button>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hours</label>
+          <input type="number" id="incomeHours" placeholder="0.0" step="0.5" min="0">
+        </div>
+        <div class="form-group">
+          <label>Miles 🚗</label>
+          <input type="number" id="incomeMiles" placeholder="0" step="0.1" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="incomeDate">
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="incomeNotes" placeholder="e.g. Airport runs">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('incomeModal')">Cancel</button>
+      <button id="saveIncomeBtn" class="btn-primary" onclick="saveIncome()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- ADD EXPENSE MODAL -->
-<div id="add-expense-modal" style="display:none" class="modal-overlay">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-header"><h3 id="expense-modal-title">Log Expense</h3><button class="modal-close" onclick="closeModal('add-expense-modal')">✕</button></div>
+<!-- ── EXPENSE MODAL ──────────────────────── -->
+<div id="expenseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('expenseModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="expenseModalTitle">Add Expense</h3>
+      <button class="modal-close" onclick="closeModal('expenseModal')">✕</button>
+    </div>
     <div class="modal-body">
-      <div class="form-group"><label>Category</label><select id="expense-category" class="form-select">
-        <option value="gas">⛽ Gas / Fuel</option>
-        <option value="car_payment">🚗 Car Payment</option>
-        <option value="insurance">🛡 Insurance</option>
-        <option value="maintenance">🔧 Maintenance & Repairs</option>
-        <option value="car_wash">🚿 Car Wash</option>
-        <option value="phone">📱 Phone Plan</option>
-        <option value="tolls">🛣 Tolls</option>
-        <option value="parking">🅿️ Parking</option>
-        <option value="other">📦 Other</option>
-      </select></div>
-      <div class="form-row">
-        <div class="form-group"><label>Amount ($)</label><input type="number" id="expense-amount" placeholder="0.00" min="0" step="0.01"/></div>
-        <div class="form-group"><label>Date</label><input type="date" id="expense-date"/></div>
+      <div class="form-group">
+        <label>Category</label>
+        <select id="expenseCategory">
+          <option>Gas</option><option>Car Repair</option><option>Car Wash</option>
+          <option>Insurance</option><option>Phone Bill</option><option>Phone Mount</option>
+          <option>Food & Drinks</option><option>Parking</option><option>Tolls</option>
+          <option>Other</option>
+        </select>
       </div>
-      <div class="form-group"><label>Notes</label><input type="text" id="expense-notes" placeholder="e.g. oil change"/></div>
-      <div class="form-group" style="flex-direction:row;align-items:center;gap:10px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="expense-deductible-check" checked/> Tax deductible</label></div>
-      <button class="btn-primary" onclick="saveExpense()">Save Expense</button>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="expenseDate">
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <input type="text" id="expenseNotes" placeholder="e.g. Shell station">
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="expenseDeductible" checked>
+        <label for="expenseDeductible">Tax deductible expense</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
+      <button id="saveExpenseBtn" class="btn-primary" onclick="saveExpense()">Save</button>
     </div>
   </div>
 </div>
 
-<div id="toast" class="toast" style="display:none"></div>
-<script src="js/app.js"></script>
+<script src="/GigProfit/js/app.js"></script>
+<script>
+  // Show splash then init
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('splashPage').classList.remove('active');
+      document.getElementById('appShell').style.display = '';
+    }, 1800);
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/GigProfit/sw.js');
+  }
+</script>
 </body>
 </html>
