@@ -838,7 +838,7 @@ async function loadMileagePage() {
       <div class="mileage-divider"></div>
       <div class="mileage-stat">
         <div class="mileage-number" style="color:var(--income-color)">${sym}${deduction.toFixed(0)}</div>
-        <div class="mileage-label">tax deduction</div>
+        <div class="mileage-label">est. tax deduction</div>
       </div>
     </div>
 
@@ -862,7 +862,7 @@ async function loadMileagePage() {
         </div>
         <div class="mileage-ytd-item">
           <div class="mileage-ytd-val" style="color:var(--income-color)">${sym}${yearDeduction.toFixed(2)}</div>
-          <div class="mileage-ytd-label">Total deduction</div>
+          <div class="mileage-ytd-label">Est. deduction</div>
         </div>
       </div>
       <div class="mileage-tip">
@@ -898,7 +898,7 @@ async function getRecentMilesList(unit, sym) {
       <div class="activity-icon">${info.emoji}</div>
       <div class="activity-info">
         <div class="activity-platform">${info.label}</div>
-        <div class="activity-meta">${fmtDate(r.date)} · ${sym}${ded} deduction</div>
+        <div class="activity-meta">${fmtDate(r.date)} · ${sym}${ded} est. deduction</div>
       </div>
       <div class="activity-amount income">${r.miles} ${unit}</div>
     </div>`;
