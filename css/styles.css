@@ -279,4 +279,4 @@ button { cursor: pointer; border: none; background: none; }
 .legend-item.green { color: #00d4aa; }
 .legend-item.red { color: #ff6b6b; }
 .legend-item.blue { color: #0066ff; }
-canvas { width: 100% !important; height: auto; }
+.chart-canvas { width: 100%; height: auto; display: block; }

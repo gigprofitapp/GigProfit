@@ -311,11 +311,19 @@ async function loadDashboard() {
 async function drawChart() {
   const canvas = document.getElementById('earningsChart');
   if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const parent = canvas.parentElement;
+  const actualW = parent ? parent.clientWidth - 32 : 340;
+  const actualH = 160;
+  canvas.width = actualW * dpr;
+  canvas.height = actualH * dpr;
+  canvas.style.width = actualW + 'px';
+  canvas.style.height = actualH + 'px';
   const ctx = canvas.getContext('2d');
-  const days = [];
-  const labels = [];
-  const incomeData = [];
-  const expenseData = [];
+  ctx.scale(dpr, dpr);
+  const W = actualW, H = actualH;
+
+  const days = [], labels = [], incomeData = [], expenseData = [];
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -1172,17 +1180,39 @@ async function loadCharts() {
     db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`)
   ]);
 
+  // Set up each canvas with proper DPR scaling
+  setupCanvas('monthlyChart', 340, 190);
+  setupCanvas('platformDonut', 340, 190);
+  setupCanvas('expenseDonut', 340, 190);
+  setupCanvas('hourlyChart', 340, 180);
+
   drawMonthlyChart(income || [], expenses || [], year);
   drawPlatformDonut(income || []);
   drawExpenseDonut(expenses || []);
   drawHourlyChart(income || []);
 }
 
+function setupCanvas(id, w, h) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const parent = canvas.parentElement;
+  const actualW = parent ? parent.clientWidth - 32 : w;
+  canvas.width = actualW * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = actualW + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { W: actualW, H: h };
+}
+
 function drawMonthlyChart(income, expenses, year) {
   const canvas = document.getElementById('monthlyChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
+  const W = parseInt(canvas.style.width) || 340;
+  const H = parseInt(canvas.style.height) || 190;
   const padL = 40, padR = 16, padT = 24, padB = 36;
   const chartW = W - padL - padR, chartH = H - padT - padB;
 
@@ -1276,7 +1306,8 @@ function drawPlatformDonut(income) {
   const canvas = document.getElementById('platformDonut');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
+  const W = parseInt(canvas.style.width) || 340;
+  const H = parseInt(canvas.style.height) || 190;
   const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
 
   const byPlatform = {};
@@ -1343,7 +1374,8 @@ function drawExpenseDonut(expenses) {
   const canvas = document.getElementById('expenseDonut');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
+  const W = parseInt(canvas.style.width) || 340;
+  const H = parseInt(canvas.style.height) || 190;
   const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
 
   const byCategory = {};
@@ -1404,7 +1436,8 @@ function drawHourlyChart(income) {
   const canvas = document.getElementById('hourlyChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const W = canvas.width, H = canvas.height;
+  const W = parseInt(canvas.style.width) || 340;
+  const H = parseInt(canvas.style.height) || 180;
   const padL = 8, padR = 8, padT = 20, padB = 28;
   const chartW = W - padL - padR, chartH = H - padT - padB;
 
