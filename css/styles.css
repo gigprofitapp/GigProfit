@@ -26,17 +26,18 @@
 
 /* ── RESET ─────────────────────────────────── */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; }
+html, body { height: 100%; overflow: hidden; background: #0a0e1a; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+[data-theme="light"] html, [data-theme="light"] body { background: #f0f4f8; }
 input, select, button, textarea { font-family: inherit; font-size: inherit; }
 button { cursor: pointer; border: none; background: none; }
 
 /* ── PAGES ─────────────────────────────────── */
 .page { display: none; position: absolute; inset: 0; background: var(--bg); overflow-y: auto; }
 .page.active { display: flex; flex-direction: column; }
-.app-shell { position: fixed; inset: 0; flex-direction: column; display: none; }
+.app-shell { position: fixed; inset: 0; flex-direction: column; display: none; background: var(--bg); }
 .app-shell.visible { display: flex; }
-.app-shell .page { position: relative; flex: 1; overflow: hidden; }
+.app-shell .page { position: relative; flex: 1; overflow: hidden; background: var(--bg); }
 .app-shell .page.active { display: flex; flex-direction: column; overflow: hidden; }
 
 /* ── SPLASH ─────────────────────────────────── */
