@@ -190,7 +190,7 @@ async function finishOnboarding() {
 // ── NAVIGATION ────────────────────────────────────────────
 function showPage(page) {
   currentPage = page;
-  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'tax', 'profile'];
+  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'charts', 'tax', 'profile'];
   const isAppPage = appPages.includes(page);
   const shell = document.getElementById('appShell');
 
@@ -215,6 +215,7 @@ function showPage(page) {
   if (page === 'income') loadIncome();
   if (page === 'expenses') loadExpenses();
   if (page === 'mileage') loadMileage();
+  if (page === 'charts') loadCharts();
   if (page === 'tax') loadTaxSummary();
   if (page === 'profile') loadProfilePage();
 }
@@ -1157,4 +1158,305 @@ async function loadTaxSummary() {
 
   document.getElementById('taxSummaryContent').innerHTML = yearSummary + quarterCards;
   document.getElementById('taxYear').textContent = year;
+}
+
+// ── CHARTS PAGE ───────────────────────────────────────────
+
+async function loadCharts() {
+  if (!currentUser) return;
+  const now = new Date();
+  const year = now.getFullYear();
+
+  const [{ data: income }, { data: expenses }] = await Promise.all([
+    db.from('gp_income').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`),
+    db.from('gp_expenses').select('*').eq('user_id', currentUser.id).gte('date', `${year}-01-01`)
+  ]);
+
+  drawMonthlyChart(income || [], expenses || [], year);
+  drawPlatformDonut(income || []);
+  drawExpenseDonut(expenses || []);
+  drawHourlyChart(income || []);
+}
+
+function drawMonthlyChart(income, expenses, year) {
+  const canvas = document.getElementById('monthlyChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 40, padR = 16, padT = 24, padB = 36;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const incData = Array(12).fill(0);
+  const expData = Array(12).fill(0);
+  const profitData = Array(12).fill(0);
+
+  income.forEach(r => {
+    const m = new Date(r.date + 'T00:00:00').getMonth();
+    incData[m] += parseFloat(r.amount) + parseFloat(r.tips || 0);
+  });
+  expenses.forEach(r => {
+    const m = new Date(r.date + 'T00:00:00').getMonth();
+    expData[m] += parseFloat(r.amount);
+  });
+  for (let i = 0; i < 12; i++) profitData[i] = Math.max(0, incData[i] - expData[i]);
+
+  const maxVal = Math.max(...incData, ...expData, 1);
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const textColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (chartH / 4) * i;
+    ctx.strokeStyle = gridColor; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillStyle = textColor; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('$' + Math.round(maxVal - (maxVal / 4) * i), padL - 4, y + 3);
+  }
+
+  const stepX = chartW / 12;
+  const currentMonth = new Date().getMonth();
+
+  // Draw income bars
+  incData.forEach((val, i) => {
+    const x = padL + stepX * i + stepX * 0.1;
+    const bw = stepX * 0.35;
+    const bh = (val / maxVal) * chartH;
+    const isCurrentMonth = i === currentMonth;
+    const grad = ctx.createLinearGradient(0, padT + chartH - bh, 0, padT + chartH);
+    grad.addColorStop(0, isCurrentMonth ? '#00d4aa' : 'rgba(0,212,170,0.6)');
+    grad.addColorStop(1, 'rgba(0,212,170,0.1)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.roundRect(x, padT + chartH - bh, bw, Math.max(bh, 1), 3); ctx.fill();
+  });
+
+  // Draw expense bars
+  expData.forEach((val, i) => {
+    const x = padL + stepX * i + stepX * 0.5;
+    const bw = stepX * 0.35;
+    const bh = (val / maxVal) * chartH;
+    ctx.fillStyle = 'rgba(255,77,77,0.5)';
+    ctx.beginPath(); ctx.roundRect(x, padT + chartH - bh, bw, Math.max(bh, 1), 3); ctx.fill();
+  });
+
+  // Draw profit line
+  ctx.strokeStyle = '#0066ff';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  profitData.forEach((val, i) => {
+    const x = padL + stepX * i + stepX * 0.5;
+    const y = padT + chartH - (val / maxVal) * chartH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Dots on profit line
+  profitData.forEach((val, i) => {
+    const x = padL + stepX * i + stepX * 0.5;
+    const y = padT + chartH - (val / maxVal) * chartH;
+    ctx.fillStyle = '#0066ff';
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Month labels
+  months.forEach((m, i) => {
+    const x = padL + stepX * i + stepX * 0.5;
+    ctx.fillStyle = i === currentMonth ? '#00d4aa' : textColor;
+    ctx.font = i === currentMonth ? 'bold 9px sans-serif' : '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(m, x, H - 8);
+  });
+}
+
+function drawPlatformDonut(income) {
+  const canvas = document.getElementById('platformDonut');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
+
+  const byPlatform = {};
+  income.forEach(row => {
+    const p = row.platform;
+    byPlatform[p] = (byPlatform[p] || 0) + parseFloat(row.amount) + parseFloat(row.tips || 0);
+  });
+
+  const entries = Object.entries(byPlatform).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+
+  const colors = ['#00d4aa','#0066ff','#ff6b6b','#ffa500','#9b59b6','#1abc9c','#e74c3c','#f39c12'];
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (total === 0) {
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('No income data', cx, cy);
+    return;
+  }
+
+  let angle = -Math.PI / 2;
+  entries.forEach(([, val], i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, angle, angle + slice);
+    ctx.closePath(); ctx.fill();
+    angle += slice;
+  });
+
+  // Donut hole
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  ctx.fillStyle = isDark ? '#151c2e' : '#ffffff';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+
+  // Center text
+  ctx.fillStyle = '#00d4aa';
+  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('$' + Math.round(total), cx, cy - 4);
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('total', cx, cy + 12);
+
+  // Legend
+  const legendX = W * 0.72, legendStartY = cy - (entries.length * 18) / 2;
+  entries.slice(0, 6).forEach(([name, val], i) => {
+    const y = legendStartY + i * 20;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(legendX - 22, y - 6, 10, 10);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)';
+    ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(name.length > 10 ? name.slice(0, 10) + '…' : name, legendX - 8, y + 3);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+    ctx.font = '9px sans-serif';
+    ctx.fillText(Math.round((val / total) * 100) + '%', legendX - 8, y + 14);
+  });
+}
+
+function drawExpenseDonut(expenses) {
+  const canvas = document.getElementById('expenseDonut');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W * 0.38, cy = H / 2, R = Math.min(cx, cy) * 0.8, r = R * 0.55;
+
+  const byCategory = {};
+  expenses.forEach(row => {
+    byCategory[row.category] = (byCategory[row.category] || 0) + parseFloat(row.amount);
+  });
+
+  const entries = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  const colors = ['#ff6b6b','#ffa500','#ff4757','#ff6348','#eccc68','#ff7f50','#ff6b81','#ff4500'];
+
+  ctx.clearRect(0, 0, W, H);
+
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+  if (total === 0) {
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('No expense data', cx, cy);
+    return;
+  }
+
+  let angle = -Math.PI / 2;
+  entries.forEach(([, val], i) => {
+    const slice = (val / total) * Math.PI * 2;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, angle, angle + slice);
+    ctx.closePath(); ctx.fill();
+    angle += slice;
+  });
+
+  ctx.fillStyle = isDark ? '#151c2e' : '#ffffff';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = '#ff6b6b';
+  ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('$' + Math.round(total), cx, cy - 4);
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('expenses', cx, cy + 12);
+
+  const legendX = W * 0.72, legendStartY = cy - (Math.min(entries.length, 6) * 18) / 2;
+  entries.slice(0, 6).forEach(([name, val], i) => {
+    const y = legendStartY + i * 20;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillRect(legendX - 22, y - 6, 10, 10);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)';
+    ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(name.length > 10 ? name.slice(0, 10) + '…' : name, legendX - 8, y + 3);
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+    ctx.font = '9px sans-serif';
+    ctx.fillText('$' + Math.round(val), legendX - 8, y + 14);
+  });
+}
+
+function drawHourlyChart(income) {
+  const canvas = document.getElementById('hourlyChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const padL = 8, padR = 8, padT = 20, padB = 28;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+
+  // Group by platform — avg hourly rate
+  const byPlatform = {};
+  income.forEach(r => {
+    if (!r.hours || parseFloat(r.hours) === 0) return;
+    const p = r.platform;
+    if (!byPlatform[p]) byPlatform[p] = { earn: 0, hours: 0 };
+    byPlatform[p].earn += parseFloat(r.amount) + parseFloat(r.tips || 0);
+    byPlatform[p].hours += parseFloat(r.hours);
+  });
+
+  const entries = Object.entries(byPlatform)
+    .map(([p, d]) => ({ name: p, rate: d.hours > 0 ? d.earn / d.hours : 0 }))
+    .sort((a, b) => b.rate - a.rate);
+
+  const colors = ['#00d4aa','#0066ff','#ffa500','#ff6b6b','#9b59b6','#1abc9c'];
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  const textColor = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (entries.length === 0) {
+    ctx.fillStyle = textColor; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Log hours to see hourly rates', W / 2, H / 2);
+    return;
+  }
+
+  const maxRate = Math.max(...entries.map(e => e.rate), 1);
+  const barH = Math.min((chartH / entries.length) * 0.6, 32);
+  const gap = chartH / entries.length;
+
+  entries.forEach(({ name, rate }, i) => {
+    const y = padT + gap * i + (gap - barH) / 2;
+    const bw = (rate / maxRate) * chartW;
+
+    // Bar
+    const grad = ctx.createLinearGradient(padL, 0, padL + bw, 0);
+    grad.addColorStop(0, colors[i % colors.length]);
+    grad.addColorStop(1, colors[i % colors.length] + '60');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.roundRect(padL, y, bw, barH, 4); ctx.fill();
+
+    // Platform name
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
+    ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(name, padL + 8, y + barH / 2 + 4);
+
+    // Rate
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('$' + rate.toFixed(2) + '/hr', W - padR, y + barH / 2 + 4);
+  });
 }

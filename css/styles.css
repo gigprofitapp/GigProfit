@@ -272,3 +272,11 @@ button { cursor: pointer; border: none; background: none; }
 .quarter-due { font-size: 0.78rem; color: var(--text2); margin-top: 8px; }
 .quarter-tip { margin-top: 10px; padding: 8px 12px; background: rgba(0,212,170,0.08); border-radius: 8px; font-size: 0.82rem; color: var(--green); }
 .header-year { font-size: 0.9rem; color: var(--text2); font-weight: 600; }
+
+/* ── CHARTS PAGE ────────────────────────────── */
+.chart-legend { display: flex; gap: 16px; margin-bottom: 10px; }
+.legend-item { font-size: 0.78rem; color: var(--text2); }
+.legend-item.green { color: #00d4aa; }
+.legend-item.red { color: #ff6b6b; }
+.legend-item.blue { color: #0066ff; }
+canvas { width: 100% !important; height: auto; }

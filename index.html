@@ -258,6 +258,36 @@
     </div>
   </div>
 
+  <!-- Charts -->
+  <div id="chartsPage" class="page">
+    <div class="app-header">
+      <h2>Charts</h2>
+    </div>
+    <div class="page-content">
+      <div class="section-card">
+        <h3 class="section-title">Monthly Income vs Expenses</h3>
+        <div class="chart-legend">
+          <span class="legend-item green">■ Income</span>
+          <span class="legend-item red">■ Expenses</span>
+          <span class="legend-item blue">— Profit</span>
+        </div>
+        <canvas id="monthlyChart" width="340" height="180"></canvas>
+      </div>
+      <div class="section-card">
+        <h3 class="section-title">Income by Platform</h3>
+        <canvas id="platformDonut" width="340" height="180"></canvas>
+      </div>
+      <div class="section-card">
+        <h3 class="section-title">Expenses by Category</h3>
+        <canvas id="expenseDonut" width="340" height="180"></canvas>
+      </div>
+      <div class="section-card">
+        <h3 class="section-title">Avg Hourly Rate by Platform</h3>
+        <canvas id="hourlyChart" width="340" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Tax Summary -->
   <div id="taxPage" class="page">
     <div class="app-header">
@@ -359,6 +389,10 @@
     <button class="nav-item" onclick="showPage('expenses')">
       <span class="nav-icon">📋</span>
       <span class="nav-label">Expenses</span>
+    </button>
+    <button class="nav-item" onclick="showPage('charts')">
+      <span class="nav-icon">📈</span>
+      <span class="nav-label">Charts</span>
     </button>
     <button class="nav-item" onclick="showPage('tax')">
       <span class="nav-icon">🧾</span>
