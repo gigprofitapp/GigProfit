@@ -190,13 +190,31 @@ async function finishOnboarding() {
 // ── NAVIGATION ────────────────────────────────────────────
 function showPage(page) {
   currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById(page + 'Page');
-  if (el) el.classList.add('active');
+  const appPages = ['dashboard', 'income', 'expenses', 'mileage', 'profile'];
+  const isAppPage = appPages.includes(page);
+  const shell = document.getElementById('appShell');
 
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navEl = document.querySelector(`.nav-item[onclick*="${page}"]`);
-  if (navEl) navEl.classList.add('active');
+  if (isAppPage) {
+    // Hide standalone pages
+    document.getElementById('authPage').classList.remove('active');
+    document.getElementById('onboardingPage').classList.remove('active');
+    // Show app shell
+    shell.style.display = 'flex';
+    // Switch inner page
+    document.querySelectorAll('.app-shell .page').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById(page + 'Page');
+    if (el) el.classList.add('active');
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navEl = document.querySelector(`.nav-item[onclick*="${page}"]`);
+    if (navEl) navEl.classList.add('active');
+  } else {
+    // Hide app shell
+    shell.style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById(page + 'Page');
+    if (el) el.classList.add('active');
+  }
 
   if (page === 'dashboard') loadDashboard();
   if (page === 'income') loadIncome();

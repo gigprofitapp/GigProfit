@@ -34,7 +34,9 @@ button { cursor: pointer; border: none; background: none; }
 /* ── PAGES ─────────────────────────────────── */
 .page { display: none; position: absolute; inset: 0; background: var(--bg); overflow-y: auto; }
 .page.active { display: flex; flex-direction: column; }
-.app-shell { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.app-shell { position: fixed; inset: 0; flex-direction: column; }
+.app-shell[style*="display:none"] { display: none !important; }
+.app-shell:not([style*="display:none"]) { display: flex; }
 .app-shell .page { position: relative; flex: 1; overflow: hidden; }
 .app-shell .page.active { display: flex; flex-direction: column; overflow: hidden; }
 
