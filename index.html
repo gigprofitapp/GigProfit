@@ -2,10 +2,12 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GigProfit - Gig Worker Finance</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GigProfit</title>
   <meta name="description" content="Track earnings, expenses, and real profit for Uber, DoorDash, Lyft, Instacart & more.">
-  <meta name="theme-color" content="#00d4aa">
+  <meta name="theme-color" content="#020817">
   <link rel="manifest" href="/GigProfit/manifest.json">
   <link rel="apple-touch-icon" href="/GigProfit/icons/icon-192.png">
   <link rel="stylesheet" href="/GigProfit/css/styles.css">
@@ -13,7 +15,7 @@
 </head>
 <body>
 
-<!-- SPLASH -->
+<!-- ═══ SPLASH ══════════════════════════════ -->
 <div id="splashPage" class="page active splash-page">
   <div class="splash-inner">
     <img src="/GigProfit/icons/icon-512.png" class="splash-logo" alt="GigProfit">
@@ -23,7 +25,7 @@
   </div>
 </div>
 
-<!-- AUTH -->
+<!-- ═══ AUTH ════════════════════════════════ -->
 <div id="authPage" class="page auth-page">
   <div class="auth-wrap">
     <div class="auth-logo-wrap">
@@ -32,8 +34,8 @@
       <p>Track your real earnings. Own your hustle.</p>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchAuthTab('login', this)">Sign In</button>
-      <button class="auth-tab" onclick="switchAuthTab('signup', this)">Create Account</button>
+      <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
     </div>
     <div id="loginForm" class="auth-form active">
       <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email"></div>
@@ -51,16 +53,14 @@
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
       Continue with Google
     </button>
-    <p class="auth-terms">By continuing you agree to our <a href="/GigProfit/privacy.html" target="_blank">Privacy Policy</a> and <a href="/GigProfit/terms.html" target="_blank">Terms</a></p>
+    <p class="auth-terms">By continuing you agree to our <a href="/GigProfit/privacy.html" target="_blank">Privacy Policy</a> and <a href="/GigProfit/terms.html" target="_blank">Terms of Service</a></p>
   </div>
 </div>
 
-<!-- ONBOARDING -->
+<!-- ═══ ONBOARDING ═══════════════════════════ -->
 <div id="onboardingPage" class="page ob-page">
   <div class="ob-wrap">
-    <div class="ob-dots">
-      <span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span>
-    </div>
+    <div class="ob-dots"><span class="ob-dot active"></span><span class="ob-dot"></span><span class="ob-dot"></span><span class="ob-dot"></span></div>
     <div id="ob1" class="ob-step active">
       <div class="ob-icon">🚗</div>
       <h2>Which platforms do you drive for?</h2>
@@ -82,406 +82,390 @@
       <div class="ob-icon">🌍</div>
       <h2>Where are you based?</h2>
       <p>We'll use the right tax rates for your location</p>
-      <div class="form-group"><label>Country</label>
-        <select id="obCountry"><option value="US">🇺🇸 United States</option><option value="CA">🇨🇦 Canada</option></select>
-      </div>
-      <div class="form-group"><label>Currency</label>
-        <select id="obCurrency"><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option></select>
-      </div>
-      <div class="ob-nav">
-        <button class="btn-back" onclick="obPrev(1)">← Back</button>
-        <button class="btn-primary" onclick="obNext(3)">Next →</button>
-      </div>
+      <div class="form-group"><label>Country</label><select id="obCountry"><option value="US">🇺🇸 United States</option><option value="CA">🇨🇦 Canada</option></select></div>
+      <div class="form-group"><label>Currency</label><select id="obCurrency"><option value="USD">USD — US Dollar</option><option value="CAD">CAD — Canadian Dollar</option></select></div>
+      <div class="ob-nav"><button class="btn-back" onclick="obPrev(1)">← Back</button><button class="btn-primary" onclick="obNext(3)">Next →</button></div>
     </div>
     <div id="ob3" class="ob-step">
       <div class="ob-icon">📋</div>
       <h2>Tax filing status</h2>
       <p>Used for estimated tax calculations</p>
-      <div class="form-group"><label>Status</label>
-        <select id="obTaxStatus">
-          <option value="single">Single</option>
-          <option value="married">Married Filing Jointly</option>
-          <option value="hoh">Head of Household</option>
-        </select>
-      </div>
-      <div class="ob-nav">
-        <button class="btn-back" onclick="obPrev(2)">← Back</button>
-        <button class="btn-primary" onclick="obNext(4)">Next →</button>
-      </div>
+      <div class="form-group"><label>Status</label><select id="obTaxStatus"><option value="single">Single</option><option value="married">Married Filing Jointly</option><option value="hoh">Head of Household</option></select></div>
+      <div class="ob-nav"><button class="btn-back" onclick="obPrev(2)">← Back</button><button class="btn-primary" onclick="obNext(4)">Next →</button></div>
     </div>
     <div id="ob4" class="ob-step">
       <div class="ob-icon">🎯</div>
       <h2>Monthly income goal</h2>
       <p>Track your progress every day</p>
-      <div class="form-group"><label>Monthly Goal ($)</label>
-        <input type="number" id="obGoal" placeholder="3000" value="3000" min="0">
-      </div>
-      <div class="ob-nav">
-        <button class="btn-back" onclick="obPrev(3)">← Back</button>
-        <button id="obFinishBtn" class="btn-primary" onclick="finishOnboarding()">Get Started 🚀</button>
-      </div>
+      <div class="form-group"><label>Monthly Goal ($)</label><input type="number" id="obGoal" placeholder="3000" value="3000" min="0"></div>
+      <div class="ob-nav"><button class="btn-back" onclick="obPrev(3)">← Back</button><button id="obFinishBtn" class="btn-primary" onclick="finishOnboarding()">Get Started 🚀</button></div>
     </div>
   </div>
 </div>
 
-<!-- APP SHELL -->
+<!-- ═══ APP SHELL ════════════════════════════ -->
 <div id="appShell" class="app-shell">
 
-  <!-- HOME -->
-  <div id="homePage" class="page">
-    <div class="page-scroll">
-      <div class="home-header">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div class="home-greeting" id="homeGreeting">Good morning,</div>
-            <div class="home-name" id="homeName">Driver 👋</div>
-            <div class="home-goal-hint" id="homeGoalHint"></div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:4px">
-            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-          </div>
-        </div>
-      </div>
+<!-- ──── HOME ──────────────────────────────── -->
+<div id="homePage" class="page">
+<div class="page-scroll">
 
-      <!-- Profit Hero -->
-      <div class="profit-hero">
-        <div class="profit-hero-top">
-          <div class="profit-hero-label">Today's Profit</div>
-          <div class="period-pill">
-            <button class="active" onclick="setHomePeriod('today',this)">Today</button>
-            <button onclick="setHomePeriod('week',this)">Week</button>
-            <button onclick="setHomePeriod('month',this)">Month</button>
-          </div>
-        </div>
-        <div class="profit-amount" id="heroProfit">$0.00</div>
-        <div class="profit-sub">What you actually kept</div>
-        <div class="profit-breakdown">
-          <div class="pb-item" style="padding-right:12px">
-            <div class="pb-label"><span class="dot green"></span>Earnings</div>
-            <div class="pb-value positive" id="heroEarnings">$0</div>
-          </div>
-          <div class="pb-item" style="padding:0 12px;text-align:center">
-            <div class="pb-label" style="justify-content:center"><span class="dot red"></span>Expenses</div>
-            <div class="pb-value negative" id="heroExpenses">$0</div>
-          </div>
-          <div class="pb-item" style="padding-left:12px;text-align:right">
-            <div class="pb-label" style="justify-content:flex-end"><span class="dot yellow"></span>Tax Reserve</div>
-            <div class="pb-value warning" id="heroTax">$0</div>
-          </div>
-        </div>
-        <div class="goal-row">
-          <span>Monthly Goal</span>
-          <span id="goalPct">0% of $0</span>
-        </div>
-        <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+  <!-- Greeting -->
+  <div class="home-header">
+    <div class="home-header-left">
+      <div class="home-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-
-      <!-- Insight -->
-      <div class="insight-card" id="insightCard">
-        <div class="insight-icon">📈</div>
-        <div class="insight-text">
-          <div class="insight-label">Insight</div>
-          <div class="insight-msg" id="insightMsg">Log income to see your personalized insights.</div>
+      <div>
+        <div class="home-greeting" id="homeGreeting">Good afternoon,</div>
+        <div class="home-name" id="homeName">Aziz 👋</div>
+        <div class="home-goal-hint" id="homeGoalHint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          You're <span id="goalHintAmt">$0</span> away from your monthly goal
         </div>
-        <div class="insight-arrow">›</div>
-      </div>
-
-      <!-- This Week -->
-      <div class="section-header"><div class="section-title">This Week</div></div>
-      <div class="week-card">
-        <div class="week-grid">
-          <div class="wg-item">
-            <div class="wg-label">💰 Earnings</div>
-            <div class="wg-val positive" id="weekEarn">$0</div>
-            <div class="wg-change" id="weekEarnChange"></div>
-          </div>
-          <div class="wg-item">
-            <div class="wg-label">📋 Expenses</div>
-            <div class="wg-val negative" id="weekExp">$0</div>
-            <div class="wg-change" id="weekExpChange"></div>
-          </div>
-          <div class="wg-item">
-            <div class="wg-label">🛡 Tax Reserve</div>
-            <div class="wg-val warning" id="weekTax">$0</div>
-            <div class="wg-change" id="weekTaxNote"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Today at a Glance -->
-      <div class="section-header"><div class="section-title">Today at a Glance</div></div>
-      <div class="glance-card">
-        <div class="glance-grid">
-          <div class="gl-item">
-            <div class="gl-icon teal">⏱</div>
-            <div class="gl-val" id="glanceHours">0h</div>
-            <div class="gl-label">Online time</div>
-          </div>
-          <div class="gl-item">
-            <div class="gl-icon blue">🚗</div>
-            <div class="gl-val" id="glanceMiles">0 mi</div>
-            <div class="gl-label">Miles driven</div>
-          </div>
-          <div class="gl-item">
-            <div class="gl-icon purple">📈</div>
-            <div class="gl-val" id="glanceHourly">$0/hr</div>
-            <div class="gl-label">Profit per hour</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activity -->
-      <div class="section-header">
-        <div class="section-title">Recent Activity</div>
-        <button class="section-link" onclick="showPage('earnings')">View all</button>
-      </div>
-      <div class="activity-list" id="recentActivity">
-        <div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>
       </div>
     </div>
+    <button class="notif-btn" onclick="toggleTheme()">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <div class="notif-dot"></div>
+    </button>
   </div>
 
-  <!-- EARNINGS -->
-  <div id="earningsPage" class="page">
-    <div class="app-header">
-      <div class="app-header-row">
-        <h2>Earnings</h2>
-        <button class="btn-add" onclick="showAddIncome()">+ Add</button>
-      </div>
-    </div>
-    <div class="page-scroll" style="padding-top:0">
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="setEarnFilter('day',this)">Day</button>
-        <button class="filter-btn" onclick="setEarnFilter('week',this)">Week</button>
-        <button class="filter-btn" onclick="setEarnFilter('month',this)">Month</button>
-        <button class="filter-btn" onclick="setEarnFilter('year',this)">Year</button>
-      </div>
-      <div class="earn-summary">
-        <div class="earn-total-label">Total Earnings</div>
-        <div class="earn-total" id="earnTotal">$0.00</div>
-        <div class="earn-change" id="earnChange"></div>
-      </div>
-      <div class="chart-card">
-        <canvas id="earnChart"></canvas>
-      </div>
-      <div class="section-header"><div class="section-title">By Platform</div></div>
-      <div class="platform-list" id="platformList">
-        <div class="empty-wrap"><p>No earnings logged yet</p></div>
-      </div>
-      <div class="section-header">
-        <div class="section-title">Earnings History</div>
-        <button class="section-link" id="earnViewAll" style="display:none" onclick="toggleEarnHistory()">View all</button>
-      </div>
-      <div class="history-list" id="historyList"></div>
-    </div>
-  </div>
-
-  <!-- EXPENSES -->
-  <div id="expensesPage" class="page">
-    <div class="app-header">
-      <div class="app-header-row">
-        <h2>Expenses</h2>
-      </div>
-    </div>
-    <div class="page-scroll" style="padding-top:0">
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="setExpFilter('day',this)">Day</button>
-        <button class="filter-btn" onclick="setExpFilter('week',this)">Week</button>
-        <button class="filter-btn" onclick="setExpFilter('month',this)">Month</button>
-        <button class="filter-btn" onclick="setExpFilter('year',this)">Year</button>
-      </div>
-      <div class="exp-summary">
-        <div class="exp-total-label">Total Expenses</div>
-        <div class="exp-total" id="expTotal">$0.00</div>
-        <div class="earn-change" id="expChange"></div>
-      </div>
-      <div class="chart-card">
-        <canvas id="expChart"></canvas>
-      </div>
-      <div class="section-header"><div class="section-title">Recent Expenses</div></div>
-      <div class="entry-list" id="expenseList">
-        <div class="empty-wrap"><div class="empty-icon">📋</div><h3>No expenses yet</h3><p>Track gas, repairs, and more to calculate your real profit</p></div>
-      </div>
-    </div>
-    <button class="fab" onclick="showAddExpense()">+</button>
-  </div>
-
-  <!-- REPORTS -->
-  <div id="reportsPage" class="page">
-    <div class="app-header">
-      <div class="app-header-row">
-        <h2>Reports</h2>
-        <select id="reportMonth" onchange="loadReports()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:0.8rem;color:var(--text);outline:none"></select>
-      </div>
-    </div>
-    <div class="page-scroll" style="padding-top:8px">
-      <div class="reports-overview">
-        <h3>This Month Overview</h3>
-        <div class="ro-net" id="roNet">$0.00</div>
-        <div class="ro-grid">
-          <div class="ro-item"><label>Earnings</label><span class="positive" id="roEarn">$0</span></div>
-          <div class="ro-item"><label>Expenses</label><span class="negative" id="roExp">$0</span></div>
-          <div class="ro-item"><label>Tax Reserve</label><span class="warning" id="roTax">$0</span></div>
-          <div class="ro-item"><label>Mileage Deduction</label><span id="roMiles">$0</span></div>
-        </div>
-      </div>
-
-      <div class="section-header"><div class="section-title">Reports</div></div>
-      <div class="report-links">
-        <div class="rl-item" onclick="showQuarterlyTax()">
-          <div class="rl-icon yellow">🛡</div>
-          <div class="rl-info"><div class="rl-name">Tax Summary</div><div class="rl-desc">Quarterly tax reserve breakdown</div></div>
-          <div class="rl-arrow">›</div>
-        </div>
-        <div class="rl-item" onclick="showMileageReport()">
-          <div class="rl-icon blue">🚗</div>
-          <div class="rl-info"><div class="rl-name">Mileage Report</div><div class="rl-desc">Track miles and IRS deduction</div></div>
-          <div class="rl-arrow">›</div>
-        </div>
-        <div class="rl-item" onclick="showProfitLoss()">
-          <div class="rl-icon teal">📈</div>
-          <div class="rl-info"><div class="rl-name">Profit & Loss</div><div class="rl-desc">Monthly P&L overview</div></div>
-          <div class="rl-arrow">›</div>
-        </div>
-      </div>
-
-      <div class="section-header"><div class="section-title">Export Data</div></div>
-      <div class="export-section">
-        <div class="rl-item" onclick="showExportModal()">
-          <div class="rl-icon teal">📊</div>
-          <div class="rl-info"><div class="rl-name">Export CSV</div><div class="rl-desc">Download as spreadsheet</div></div>
-          <div class="rl-arrow">›</div>
-        </div>
-        <div class="rl-item" onclick="showExportModal()">
-          <div class="rl-icon red">📄</div>
-          <div class="rl-info"><div class="rl-name">Export PDF</div><div class="rl-desc">Download tax report</div></div>
-          <div class="rl-arrow">›</div>
-        </div>
-      </div>
-
-      <!-- Tax Quarters -->
-      <div class="section-header"><div class="section-title" id="taxYearLabel">2026 Quarterly Tax</div></div>
-      <div id="quarterCards" style="padding:0 16px 16px"></div>
-    </div>
-  </div>
-
-  <!-- PROFILE -->
-  <div id="profilePage" class="page">
-    <div class="app-header">
-      <div class="app-header-row"><h2>Profile</h2></div>
-    </div>
-    <div class="page-scroll" style="padding-top:0">
-      <div class="profile-hero">
-        <div class="profile-av">👤</div>
-        <div>
-          <div class="profile-name" id="profileName">Driver</div>
-          <div class="profile-email" id="profileEmail"></div>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <div class="settings-group-label">Preferences</div>
-        <div class="settings-list">
-          <div class="settings-item">
-            <div class="si-icon teal">🎯</div>
-            <div class="si-content"><div class="si-label">Monthly Goal</div></div>
-            <div class="si-right"><span id="siGoal">$0</span> ›</div>
-          </div>
-          <div class="settings-item">
-            <div class="si-icon blue">💱</div>
-            <div class="si-content"><div class="si-label">Currency</div></div>
-            <div class="si-right"><span id="siCurrency">USD</span> ›</div>
-          </div>
-          <div class="settings-item" onclick="toggleTheme()">
-            <div class="si-icon purple">🌙</div>
-            <div class="si-content"><div class="si-label">Theme</div></div>
-            <div class="si-right" id="siTheme">Dark ›</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <div class="settings-group-label">Platforms</div>
-        <div class="settings-list">
-          <div class="platform-chips" id="profilePlatforms"></div>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <div class="settings-group-label">Data & Export</div>
-        <div class="settings-list">
-          <div class="settings-item" onclick="showExportModal()">
-            <div class="si-icon teal">📤</div>
-            <div class="si-content"><div class="si-label">Export Data</div><div class="si-value">PDF or CSV</div></div>
-            <div class="si-right">›</div>
-          </div>
-          <div class="settings-item" onclick="startOnboarding()">
-            <div class="si-icon gray">🔄</div>
-            <div class="si-content"><div class="si-label">Reset Setup</div><div class="si-value">Redo onboarding</div></div>
-            <div class="si-right">›</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="settings-group">
-        <div class="settings-group-label">Legal</div>
-        <div class="settings-list">
-          <div class="settings-item" onclick="window.open('/GigProfit/privacy.html')">
-            <div class="si-icon gray">🔒</div>
-            <div class="si-content"><div class="si-label">Privacy Policy</div></div>
-            <div class="si-right">›</div>
-          </div>
-          <div class="settings-item" onclick="window.open('/GigProfit/terms.html')">
-            <div class="si-icon gray">📜</div>
-            <div class="si-content"><div class="si-label">Terms of Service</div></div>
-            <div class="si-right">›</div>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-logout" onclick="signOut()">
-        <span>→</span> Log Out
+  <!-- Profit Hero -->
+  <div class="profit-hero">
+    <div class="ph-top">
+      <div class="ph-label">Today's Profit</div>
+      <button class="ph-pill" onclick="openPeriodPicker()">
+        <span id="periodLabel">Today</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
+    <div class="ph-amount" id="heroProfit">$0.00</div>
+    <div class="ph-sub">What you actually kept today</div>
+    <div class="ph-breakdown">
+      <div class="ph-item">
+        <div class="ph-item-label">
+          <div class="ph-icon earn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          Earnings
+        </div>
+        <div class="ph-item-val earn" id="heroEarnings">$0.00</div>
+      </div>
+      <div class="ph-item">
+        <div class="ph-item-label">
+          <div class="ph-icon exp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </div>
+          Expenses
+        </div>
+        <div class="ph-item-val exp" id="heroExpenses">$0.00</div>
+      </div>
+      <div class="ph-item">
+        <div class="ph-item-label">
+          <div class="ph-icon tax">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          Tax Reserve
+        </div>
+        <div class="ph-item-val tax" id="heroTax">$0.00</div>
+      </div>
+    </div>
+    <div class="ph-goal-row">
+      <span class="ph-goal-label">Monthly Goal</span>
+      <span class="ph-goal-pct"><em id="goalPctNum">0%</em> of <span id="goalAmt">$0</span></span>
+    </div>
+    <div class="ph-bar"><div class="ph-bar-fill" id="goalFill" style="width:0%"></div></div>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <button class="nav-btn active" onclick="showPage('home')" data-page="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-      <span>Home</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('earnings')" data-page="earnings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-      <span>Earnings</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('expenses')" data-page="expenses">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span>Expenses</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('reports')" data-page="reports">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      <span>Reports</span>
-    </button>
-    <button class="nav-btn" onclick="showPage('profile')" data-page="profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Profile</span>
-    </button>
-  </nav>
+  <!-- Insight -->
+  <div class="insight-card">
+    <div class="ic-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div class="ic-text">
+      <div class="ic-label">Insight</div>
+      <div class="ic-msg" id="insightMsg">Log income to see your personalized insights.</div>
+    </div>
+    <div class="ic-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+  </div>
+
+  <!-- This Week -->
+  <div class="section-label" style="margin-top:20px">THIS WEEK</div>
+  <div class="week-card">
+    <div class="week-grid">
+      <div class="wg-col">
+        <div class="wg-label">
+          <div class="wg-icon earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          Earnings
+        </div>
+        <div class="wg-val positive" id="weekEarn">$0</div>
+        <div class="wg-change" id="weekEarnChg"></div>
+      </div>
+      <div class="wg-col">
+        <div class="wg-label">
+          <div class="wg-icon exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+          Expenses
+        </div>
+        <div class="wg-val negative" id="weekExp">$0</div>
+        <div class="wg-change" id="weekExpChg"></div>
+      </div>
+      <div class="wg-col">
+        <div class="wg-label">
+          <div class="wg-icon tax"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          Tax Reserve
+        </div>
+        <div class="wg-val warning" id="weekTax">$0</div>
+        <div class="wg-change neutral" id="weekTaxNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today at a Glance -->
+  <div class="section-label" style="margin-top:20px">TODAY AT A GLANCE</div>
+  <div class="glance-card">
+    <div class="glance-grid">
+      <div class="gl-col">
+        <div class="gl-icon-wrap teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="gl-text">
+          <div class="gl-val" id="glanceHours">0 <em>hrs</em></div>
+          <div class="gl-label">Online time</div>
+        </div>
+      </div>
+      <div class="gl-col">
+        <div class="gl-icon-wrap blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l2-8h14l2 8"/><path d="M5 17h14"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/></svg>
+        </div>
+        <div class="gl-text">
+          <div class="gl-val" id="glanceMiles">0 <em>mi</em></div>
+          <div class="gl-label">Miles driven</div>
+        </div>
+      </div>
+      <div class="gl-col">
+        <div class="gl-icon-wrap green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="gl-text">
+          <div class="gl-val" id="glanceHourly">$0 <em>/hr</em></div>
+          <div class="gl-label">Profit per hour</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="section-label" style="margin-top:20px">
+    RECENT ACTIVITY
+    <button class="section-link" onclick="showPage('earnings')">View all</button>
+  </div>
+  <div class="activity-card" id="recentActivity">
+    <div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>
+  </div>
+  <div style="height:8px"></div>
+
+</div><!-- /page-scroll -->
+</div><!-- /homePage -->
+
+<!-- ──── EARNINGS ──────────────────────────── -->
+<div id="earningsPage" class="page">
+  <div class="app-header">
+    <div class="app-header-row">
+      <h2>Earnings</h2>
+      <button class="btn-add" onclick="showAddIncome()">+ Add</button>
+    </div>
+  </div>
+  <div class="page-scroll" style="padding-top:0">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setEarnFilter('day',this)">Day</button>
+      <button class="filter-btn" onclick="setEarnFilter('week',this)">Week</button>
+      <button class="filter-btn" onclick="setEarnFilter('month',this)">Month</button>
+      <button class="filter-btn" onclick="setEarnFilter('year',this)">Year</button>
+    </div>
+    <div class="earn-summary">
+      <div class="earn-total-label">Total Earnings</div>
+      <div class="earn-total" id="earnTotal">$0.00</div>
+      <div class="earn-change" id="earnChange"></div>
+    </div>
+    <div class="chart-card"><canvas id="earnChart"></canvas></div>
+    <div class="section-label">BY PLATFORM</div>
+    <div class="list-card" id="platformList"><div class="empty-wrap"><p>No earnings in this period</p></div></div>
+    <div class="section-label">EARNINGS HISTORY</div>
+    <div class="list-card" id="historyList"></div>
+  </div>
 </div>
 
-<!-- INCOME MODAL -->
+<!-- ──── EXPENSES ──────────────────────────── -->
+<div id="expensesPage" class="page">
+  <div class="app-header">
+    <div class="app-header-row"><h2>Expenses</h2></div>
+  </div>
+  <div class="page-scroll" style="padding-top:0">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setExpFilter('day',this)">Day</button>
+      <button class="filter-btn" onclick="setExpFilter('week',this)">Week</button>
+      <button class="filter-btn" onclick="setExpFilter('month',this)">Month</button>
+      <button class="filter-btn" onclick="setExpFilter('year',this)">Year</button>
+    </div>
+    <div class="earn-summary">
+      <div class="exp-total-label">Total Expenses</div>
+      <div class="exp-total" id="expTotal">$0.00</div>
+    </div>
+    <div class="chart-card"><canvas id="expChart"></canvas></div>
+    <div class="section-label">RECENT EXPENSES</div>
+    <div style="padding:0 16px" id="expenseList">
+      <div class="empty-wrap"><div class="empty-icon">📋</div><h3>No expenses yet</h3><p>Track gas, repairs, and more to calculate your real profit</p></div>
+    </div>
+  </div>
+  <button class="fab" onclick="showAddExpense()">+</button>
+</div>
+
+<!-- ──── REPORTS ───────────────────────────── -->
+<div id="reportsPage" class="page">
+  <div class="app-header">
+    <div class="app-header-row">
+      <h2>Reports</h2>
+      <select id="reportMonth" onchange="loadReports()" style="background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:6px 28px 6px 12px;font-size:0.78rem;color:var(--text);outline:none;font-family:inherit"></select>
+    </div>
+  </div>
+  <div class="page-scroll" style="padding-top:0">
+    <div class="reports-hero">
+      <h3>This Month Overview</h3>
+      <div class="ro-net" id="roNet">$0.00</div>
+      <div class="ro-grid">
+        <div class="ro-item"><label>Earnings</label><span class="positive" id="roEarn">$0</span></div>
+        <div class="ro-item"><label>Expenses</label><span class="negative" id="roExp">$0</span></div>
+        <div class="ro-item"><label>Tax Reserve</label><span class="warning" id="roTax">$0</span></div>
+        <div class="ro-item"><label>Mileage Deduction</label><span id="roMiles">$0</span></div>
+      </div>
+    </div>
+    <div class="section-label">REPORTS</div>
+    <div class="menu-card">
+      <div class="menu-row" onclick="scrollToQuarters()">
+        <div class="menu-icon yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="menu-info"><div class="menu-name">Tax Summary</div><div class="menu-desc">Quarterly tax reserve breakdown</div></div>
+        <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="scrollToQuarters()">
+        <div class="menu-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
+        <div class="menu-info"><div class="menu-name">Mileage Report</div><div class="menu-desc">Track miles and IRS deduction</div></div>
+        <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="scrollToQuarters()">
+        <div class="menu-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <div class="menu-info"><div class="menu-name">Profit & Loss</div><div class="menu-desc">Monthly P&L overview</div></div>
+        <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="section-label">EXPORT DATA</div>
+    <div class="menu-card">
+      <div class="menu-row" onclick="showExportModal()">
+        <div class="menu-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+        <div class="menu-info"><div class="menu-name">Export CSV</div><div class="menu-desc">Download as spreadsheet</div></div>
+        <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="menu-row" onclick="showExportModal()">
+        <div class="menu-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div class="menu-info"><div class="menu-name">Export PDF</div><div class="menu-desc">Download tax report</div></div>
+        <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="section-label" id="taxYearLabel">2026 QUARTERLY TAX</div>
+    <div id="quarterCards" style="padding:0 16px 16px"></div>
+  </div>
+</div>
+
+<!-- ──── PROFILE ───────────────────────────── -->
+<div id="profilePage" class="page">
+  <div class="app-header"><div class="app-header-row"><h2>Profile</h2></div></div>
+  <div class="page-scroll" style="padding-top:0">
+    <div class="profile-hero">
+      <div class="profile-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div><div class="profile-name" id="profileName">Driver</div><div class="profile-email" id="profileEmail"></div></div>
+    </div>
+    <div class="sg-label">PREFERENCES</div>
+    <div class="sg-card">
+      <div class="sg-row">
+        <div class="sg-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Monthly Goal</div></div>
+        <div class="sg-right"><span id="siGoal">$0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="sg-row">
+        <div class="sg-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Currency</div></div>
+        <div class="sg-right"><span id="siCurrency">USD</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="sg-row" onclick="toggleTheme()">
+        <div class="sg-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Theme</div></div>
+        <div class="sg-right" id="siTheme">Dark<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="sg-label">PLATFORMS</div>
+    <div class="sg-card"><div class="plat-chips-wrap" id="profilePlatforms"></div></div>
+    <div class="sg-label">DATA & EXPORT</div>
+    <div class="sg-card">
+      <div class="sg-row" onclick="showExportModal()">
+        <div class="sg-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Export Data</div><div class="sg-value">PDF or CSV</div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="sg-row" onclick="startOnboarding()">
+        <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.79"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Reset Setup</div><div class="sg-value">Redo onboarding</div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <div class="sg-label">LEGAL</div>
+    <div class="sg-card">
+      <div class="sg-row" onclick="window.open('/GigProfit/privacy.html')">
+        <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Privacy Policy</div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="sg-row" onclick="window.open('/GigProfit/terms.html')">
+        <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Terms of Service</div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+    <button class="btn-logout2" onclick="signOut()">Log Out</button>
+  </div>
+</div>
+
+<!-- ──── BOTTOM NAV ────────────────────────── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showPage('home')" data-page="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('earnings')" data-page="earnings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span>Earnings</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('expenses')" data-page="expenses">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>Expenses</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('reports')" data-page="reports">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Reports</span>
+  </button>
+  <button class="nav-btn" onclick="showPage('profile')" data-page="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+</div><!-- /appShell -->
+
+<!-- ═══ MODALS ═══════════════════════════════ -->
 <div id="incomeModal" class="modal-overlay" onclick="if(event.target===this)closeModal('incomeModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-header">
-      <h3 id="incomeModalTitle">Log Income</h3>
-      <button class="modal-close" onclick="closeModal('incomeModal')">✕</button>
-    </div>
+    <div class="modal-header"><h3 id="incomeModalTitle">Log Income</h3><button class="modal-close" onclick="closeModal('incomeModal')">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label>Platform</label>
-        <select id="incomePlatform"><option>Uber</option><option>Lyft</option><option>DoorDash</option><option>Instacart</option><option>Amazon Flex</option><option>Uber Eats</option><option>Grubhub</option><option>Spark</option><option>Other</option></select>
-      </div>
+      <div class="form-group"><label>Platform</label><select id="incomePlatform"><option>Uber</option><option>Lyft</option><option>DoorDash</option><option>Instacart</option><option>Amazon Flex</option><option>Uber Eats</option><option>Grubhub</option><option>Spark</option><option>Other</option></select></div>
       <div class="form-row">
         <div class="form-group"><label>Earnings ($)</label><input type="number" id="incomeAmount" placeholder="0.00" step="0.01" min="0"></div>
         <div class="form-group"><label>Tips ($)</label><input type="number" id="incomeTips" placeholder="0.00" step="0.01" min="0"></div>
@@ -500,25 +484,16 @@
   </div>
 </div>
 
-<!-- EXPENSE MODAL -->
 <div id="expenseModal" class="modal-overlay" onclick="if(event.target===this)closeModal('expenseModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-header">
-      <h3 id="expenseModalTitle">Add Expense</h3>
-      <button class="modal-close" onclick="closeModal('expenseModal')">✕</button>
-    </div>
+    <div class="modal-header"><h3 id="expenseModalTitle">Add Expense</h3><button class="modal-close" onclick="closeModal('expenseModal')">✕</button></div>
     <div class="modal-body">
-      <div class="form-group"><label>Category</label>
-        <select id="expenseCategory"><option>Gas</option><option>Car Repair</option><option>Car Wash</option><option>Insurance</option><option>Phone Bill</option><option>Tolls</option><option>Parking</option><option>Food & Drinks</option><option>Other</option></select>
-      </div>
+      <div class="form-group"><label>Category</label><select id="expenseCategory"><option>Gas</option><option>Car Repair</option><option>Car Wash</option><option>Insurance</option><option>Phone Bill</option><option>Tolls</option><option>Parking</option><option>Food & Drinks</option><option>Other</option></select></div>
       <div class="form-group"><label>Amount ($)</label><input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0"></div>
       <div class="form-group"><label>Date</label><input type="date" id="expenseDate"></div>
       <div class="form-group"><label>Notes</label><input type="text" id="expenseNotes" placeholder="Optional"></div>
-      <div class="form-check">
-        <input type="checkbox" id="expenseDeductible" checked>
-        <label for="expenseDeductible">Tax deductible expense</label>
-      </div>
+      <div class="form-check"><input type="checkbox" id="expenseDeductible" checked><label for="expenseDeductible">Tax deductible expense</label></div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('expenseModal')">Cancel</button>
@@ -527,14 +502,10 @@
   </div>
 </div>
 
-<!-- EXPORT MODAL -->
 <div id="exportModal" class="modal-overlay" onclick="if(event.target===this)closeModal('exportModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-header">
-      <h3>Export Data</h3>
-      <button class="modal-close" onclick="closeModal('exportModal')">✕</button>
-    </div>
+    <div class="modal-header"><h3>Export Data</h3><button class="modal-close" onclick="closeModal('exportModal')">✕</button></div>
     <div class="modal-body">
       <div class="form-group"><label>Quick Select</label>
         <div class="range-chips">
@@ -572,10 +543,10 @@
 
 <script src="/GigProfit/js/app.js"></script>
 <script>
-  window.addEventListener('load', () => {
-    setTimeout(() => { document.getElementById('splashPage').classList.remove('active'); }, 1800);
-  });
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/GigProfit/sw.js'); }
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('splashPage').classList.remove('active')},1800);
+});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/GigProfit/sw.js')}
 </script>
 </body>
 </html>
