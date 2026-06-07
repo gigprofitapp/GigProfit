@@ -570,3 +570,23 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .hist-date{font-size:0.875rem;font-weight:500}
 .hist-platforms{font-size:0.6875rem;color:var(--text3);margin-top:2px}
 .hist-amt{font-size:0.9375rem;font-weight:700;color:var(--teal);letter-spacing:-0.2px;font-variant-numeric:tabular-nums;flex-shrink:0}
+
+/* ── PERIOD DROPDOWN ───────────────────────── */
+.ph-period-wrap{position:relative;flex-shrink:0}
+.period-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:12px;overflow:hidden;z-index:50;
+  min-width:130px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+.period-dropdown button{
+  display:block;width:100%;padding:12px 16px;
+  text-align:left;font-size:0.875rem;font-weight:500;
+  color:var(--text);border-bottom:1px solid var(--border);
+  cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;
+  transition:background 0.12s;
+}
+.period-dropdown button:last-child{border-bottom:none}
+.period-dropdown button:active{background:var(--card3)}
+.period-dropdown button.active{color:var(--teal);font-weight:700}

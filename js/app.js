@@ -138,14 +138,34 @@ function showPage(page){
 }
 
 // ── HOME ─────────────────────────────────────
-let periodPickerOpen=false;
-function openPeriodPicker(){
-  const options=['Today','This Week','This Month'];
-  const periods=['today','week','month'];
-  const current=document.getElementById('periodLabel').textContent;
-  const idx=(options.indexOf(current)+1)%options.length;
-  document.getElementById('periodLabel').textContent=options[idx];
-  homePeriod=periods[idx];
+function togglePeriodDropdown(){
+  const dd=document.getElementById('periodDropdown');
+  dd.style.display=dd.style.display==='none'?'block':'none';
+  // Close on outside click
+  setTimeout(()=>{
+    document.addEventListener('click',closePeriodDropdown,{once:true});
+  },10);
+}
+function closePeriodDropdown(){
+  const dd=document.getElementById('periodDropdown');
+  if(dd)dd.style.display='none';
+}
+function setPeriod(period,label){
+  homePeriod=period;
+  document.getElementById('periodLabel').textContent=label;
+  // Update active state
+  document.querySelectorAll('.period-dropdown button').forEach(b=>{
+    b.classList.toggle('active',b.textContent===label);
+  });
+  document.getElementById('periodDropdown').style.display='none';
+  // Update hero label
+  const heroLabel={today:"TODAY'S PROFIT",week:"THIS WEEK'S PROFIT",month:"THIS MONTH'S PROFIT"};
+  const lbl=document.querySelector('.ph-label');
+  if(lbl)lbl.textContent=heroLabel[period]||"TODAY'S PROFIT";
+  // Update sub text
+  const sub={today:'What you actually kept today',week:'What you actually kept this week',month:'What you actually kept this month'};
+  const subEl=document.querySelector('.ph-sub');
+  if(subEl)subEl.textContent=sub[period];
   loadHome();
 }
 
@@ -627,14 +647,17 @@ function drawBarChart(canvasId,inc,period,start,color){
     ['J','F','M','A','M','J','J','A','S','O','N','D'].forEach(m=>{labels.push(m);data.push(0);});
     inc.forEach(r=>{const m=parseInt(r.date.split('-')[1])-1;data[m]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
   }else{
-    // Day — show platforms as bars for today
+    // Day — show by platform or single empty bar
     const byPlat={};
     inc.forEach(r=>{byPlat[r.platform]=(byPlat[r.platform]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
-    const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).slice(0,6);
     if(entries.length===0){
-      labels.push('Today');data.push(0);
+      ['6a','9a','12p','3p','6p','9p'].forEach(h=>{labels.push(h);data.push(0);});
     }else{
-      entries.forEach(([p,v])=>{labels.push(p.length>5?p.slice(0,5):'...');data.push(v);});
+      entries.forEach(([p,v])=>{
+        labels.push(p.length>6?p.slice(0,6):p);
+        data.push(v);
+      });
     }
   }
 
@@ -656,7 +679,8 @@ function drawBarChart(canvasId,inc,period,start,color){
     grad.addColorStop(0,color);grad.addColorStop(1,color+'25');
     ctx.fillStyle=grad;
     ctx.beginPath();ctx.roundRect(x,padT+cH-bh,bW,Math.max(bh,1),3);ctx.fill();
-    ctx.fillStyle=textClr;ctx.font=`${Math.max(8,Math.floor(cW/n*0.5))}px Inter,sans-serif`;ctx.textAlign='center';
+    const fontSize=Math.min(11,Math.max(8,Math.floor(cW/n*0.45)));
+    ctx.fillStyle=textClr;ctx.font=`${fontSize}px Inter,sans-serif`;ctx.textAlign='center';
     ctx.fillText(labels[i],x+bW/2,H-5);
   });
 }

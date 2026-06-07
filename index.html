@@ -136,10 +136,17 @@
   <div class="profit-hero">
     <div class="ph-top">
       <div class="ph-label">Today's Profit</div>
-      <button class="ph-pill" onclick="openPeriodPicker()">
-        <span id="periodLabel">Today</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+      <div class="ph-period-wrap">
+        <button class="ph-pill" onclick="togglePeriodDropdown()">
+          <span id="periodLabel">Today</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="periodDropdown" class="period-dropdown" style="display:none">
+          <button onclick="setPeriod('today','Today')">Today</button>
+          <button onclick="setPeriod('week','This Week')">This Week</button>
+          <button onclick="setPeriod('month','This Month')">This Month</button>
+        </div>
+      </div>
     </div>
     <div class="ph-amount" id="heroProfit">$0.00</div>
     <div class="ph-sub">What you actually kept today</div>
