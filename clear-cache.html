@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><title>Clear Cache</title></head>
+<body style="background:#020817;color:#1ed8a4;font-family:sans-serif;padding:40px;text-align:center">
+<h2>Clearing GigProfit Cache...</h2>
+<p id="status">Working...</p>
+<script>
+async function clearAll() {
+  const status = document.getElementById('status');
+  
+  // Unregister all service workers
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (let reg of regs) { await reg.unregister(); }
+    status.textContent = 'Service workers cleared...';
+  }
+  
+  // Clear all caches
+  const keys = await caches.keys();
+  for (let key of keys) { await caches.delete(key); }
+  status.textContent = 'All caches cleared! (' + keys.length + ' caches deleted)';
+  
+  setTimeout(() => {
+    status.textContent = 'Done! Redirecting to app...';
+    window.location.href = '/GigProfit/';
+  }, 2000);
+}
+clearAll();
+</script>
+</body>
+</html>
