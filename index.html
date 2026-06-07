@@ -594,7 +594,13 @@
 window.addEventListener('load',()=>{
   setTimeout(()=>{document.getElementById('splashPage').classList.remove('active')},1800);
 });
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/GigProfit/sw.js')}
+// Unregister any existing service workers and clear caches
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+  caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+}
 </script>
 </body>
 </html>
