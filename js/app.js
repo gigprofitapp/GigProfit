@@ -109,7 +109,7 @@ function obNext(step){
 }
 function obPrev(step){showObStep(step);}
 async function finishOnboarding(){
-  const goal=parseFloat(document.getElementById('obGoal').value)||3000;
+  const goal=parseFloat(document.getElementById('obGoal').value)||0;
   obData.monthly_goal=goal;
   const btn=document.getElementById('obFinishBtn');
   setLoading(btn,true,'Setting up...');
@@ -271,14 +271,18 @@ function setEarnFilter(f,btn){
 }
 async function loadEarnings(){
   if(!currentUser)return;
+  // For day filter, fetch last 7 days so chart has context
   const {start,end}=getRange(earnFilter);
-  const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end).order('date',{ascending:false});
-  const total=sumF(inc,'amount')+sumF(inc,'tips');
+  const fetchStart = earnFilter==='day' ? getRange('week').start : start;
+  const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',fetchStart).lte('date',end).order('date',{ascending:false});
+  // For totals, only use the actual filter range
+  const filtered = earnFilter==='day' ? (inc||[]).filter(r=>r.date===end) : (inc||[]);
+  const total=sumF(filtered,'amount')+sumF(filtered,'tips');
   setText('earnTotal',fmt(total));
   drawBarChart('earnChart',inc||[],earnFilter,start,'#1ed8a4');
   // Platform list
   const byPlat={};
-  (inc||[]).forEach(r=>{const p=r.platform;byPlat[p]=(byPlat[p]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
+  filtered.forEach(r=>{const p=r.platform;byPlat[p]=(byPlat[p]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
   const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]);
   const colors=['#1ed8a4','#4a90d9','#f59e0b','#f16c6c','#8b5cf6','#34d399','#fb923c'];
   const pl=document.getElementById('platformList');
@@ -573,15 +577,22 @@ function drawBarChart(canvasId,inc,period,start,color){
     inc.forEach(r=>{const d=new Date(r.date+'T00:00:00');const i=Math.round((d-startD)/86400000);if(i>=0&&i<7)data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
   }else if(period==='month'){
     const now=new Date();const dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-    for(let d=1;d<=dim;d+=4){labels.push(d+'');data.push(0);}
-    inc.forEach(r=>{const day=parseInt(r.date.split('-')[2]);const i=Math.floor((day-1)/4);if(i<data.length)data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
+    for(let d=1;d<=dim;d+=3){labels.push(d+'');data.push(0);}
+    inc.forEach(r=>{const day=parseInt(r.date.split('-')[2]);const i=Math.floor((day-1)/3);if(i<data.length)data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
   }else if(period==='year'){
     ['J','F','M','A','M','J','J','A','S','O','N','D'].forEach(m=>{labels.push(m);data.push(0);});
     inc.forEach(r=>{const m=parseInt(r.date.split('-')[1])-1;data[m]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
   }else{
-    for(let h=6;h<=22;h+=2){labels.push(h<12?h+'a':h===12?'12p':(h-12)+'p');data.push(0);}
-    const today=new Date().toISOString().split('T')[0];
-    inc.filter(r=>r.date===today).forEach(r=>{const i=Math.min(Math.floor(8),data.length-1);data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
+    // Day — show last 7 days as a mini trend
+    const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(days[d.getDay()]);data.push(0);}
+    inc.forEach(r=>{
+      const d=new Date(r.date+'T00:00:00');
+      const today=new Date();today.setHours(0,0,0,0);
+      const diff=Math.round((today-d)/86400000);
+      const i=6-diff;
+      if(i>=0&&i<7)data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);
+    });
   }
 
   const maxV=Math.max(...data,1);
@@ -668,4 +679,36 @@ function toast(msg,type='success'){
   const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
   document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),10);
   setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3000);
+}
+
+// ── PROFILE EDIT ─────────────────────────────
+function editGoal() {
+  document.getElementById('goalInput').value = userProfile?.monthly_goal || '';
+  document.getElementById('goalModal').classList.add('active');
+}
+
+async function saveGoal() {
+  const val = parseFloat(document.getElementById('goalInput').value);
+  if (isNaN(val) || val < 0) return toast('Enter a valid amount', 'error');
+  const { error } = await db.from('profiles').update({ monthly_goal: val }).eq('user_id', currentUser.id);
+  if (error) { toast('Error saving', 'error'); return; }
+  userProfile.monthly_goal = val;
+  setText('siGoal', fmtShort(val));
+  closeModal('goalModal');
+  toast('Goal updated!', 'success');
+}
+
+function editCurrency() {
+  document.getElementById('currencyInput').value = userProfile?.currency || 'USD';
+  document.getElementById('currencyModal').classList.add('active');
+}
+
+async function saveCurrency() {
+  const val = document.getElementById('currencyInput').value;
+  const { error } = await db.from('profiles').update({ currency: val }).eq('user_id', currentUser.id);
+  if (error) { toast('Error saving', 'error'); return; }
+  userProfile.currency = val;
+  setText('siCurrency', val);
+  closeModal('currencyModal');
+  toast('Currency updated!', 'success');
 }

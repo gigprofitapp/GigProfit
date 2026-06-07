@@ -97,7 +97,8 @@
       <div class="ob-icon">🎯</div>
       <h2>Monthly income goal</h2>
       <p>Track your progress every day</p>
-      <div class="form-group"><label>Monthly Goal ($)</label><input type="number" id="obGoal" placeholder="3000" value="3000" min="0"></div>
+      <div class="form-group"><label>Monthly Goal ($)</label>
+        <input type="number" id="obGoal" placeholder="e.g. 3000" value="" min="0"></div>
       <div class="ob-nav"><button class="btn-back" onclick="obPrev(3)">← Back</button><button id="obFinishBtn" class="btn-primary" onclick="finishOnboarding()">Get Started 🚀</button></div>
     </div>
   </div>
@@ -386,12 +387,12 @@
     </div>
     <div class="sg-label">PREFERENCES</div>
     <div class="sg-card">
-      <div class="sg-row">
+      <div class="sg-row" onclick="editGoal()">
         <div class="sg-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
         <div class="sg-content"><div class="sg-label2">Monthly Goal</div></div>
         <div class="sg-right"><span id="siGoal">$0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
       </div>
-      <div class="sg-row">
+      <div class="sg-row" onclick="editCurrency()">
         <div class="sg-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
         <div class="sg-content"><div class="sg-label2">Currency</div></div>
         <div class="sg-right"><span id="siCurrency">USD</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
@@ -537,6 +538,46 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('exportModal')">Cancel</button>
       <button id="runExportBtn" class="btn-primary" onclick="runExport()">Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div id="goalModal" class="modal-overlay" onclick="if(event.target===this)closeModal('goalModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><h3>Monthly Goal</h3><button class="modal-close" onclick="closeModal('goalModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Monthly Income Goal ($)</label>
+        <input type="number" id="goalInput" placeholder="e.g. 3000" min="0" step="100">
+      </div>
+      <p style="font-size:0.8rem;color:var(--text3);line-height:1.5">Set your monthly earnings target. Your dashboard will show your progress toward this goal.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveGoal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CURRENCY MODAL -->
+<div id="currencyModal" class="modal-overlay" onclick="if(event.target===this)closeModal('currencyModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><h3>Currency</h3><button class="modal-close" onclick="closeModal('currencyModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Select Currency</label>
+        <select id="currencyInput">
+          <option value="USD">USD — US Dollar ($)</option>
+          <option value="CAD">CAD — Canadian Dollar (CA$)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('currencyModal')">Cancel</button>
+      <button class="btn-primary" onclick="saveCurrency()">Save</button>
     </div>
   </div>
 </div>
