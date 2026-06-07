@@ -338,7 +338,7 @@ async function loadEarnings(){
     return `<div class="hist-item">
       <div class="hist-left">
         <div class="hist-date">${formatDateLong(r.date)}</div>
-        <div class="hist-platforms">${r.platform}${r.hours?\` · \${r.hours}hrs\`:''}${r.miles?\` · \${r.miles}mi\`:''}</div>
+        <div class="hist-platforms">${r.platform}${r.hours?' · '+r.hours+'hrs':''}${r.miles?' · '+r.miles+'mi':''}</div>
       </div>
       <div class="hist-amt">${fmt(amt)}</div>
       <div class="act-actions">
