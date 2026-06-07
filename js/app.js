@@ -279,6 +279,10 @@ function setEarnFilter(f,btn){
 async function loadEarnings(){
   if(!currentUser)return;
   const {start,end}=getRange(earnFilter);
+  // Update total label to show period
+  const periodLabels={day:'Today',week:'This Week',month:'This Month',year:'This Year'};
+  const el=document.getElementById('earnTotalLabel');
+  if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter].toUpperCase();
   const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end).order('date',{ascending:false});
   const filtered=inc||[];
   const total=sumF(filtered,'amount')+sumF(filtered,'tips');
@@ -484,7 +488,10 @@ async function loadProfilePage(){
   const name=userProfile.full_name||'Driver';
   const email=currentUser.email;
   const masked=email.split('@')[0].slice(0,4)+'****@'+email.split('@')[1];
-  setText('profileName',name);setText('profileEmail',masked);
+  setText('profileName',name);
+  // Email now shown in Account section
+  const emailEl=document.getElementById('profileEmail');
+  if(emailEl)emailEl.textContent=masked;
   setText('siGoal',fmtShort(userProfile.monthly_goal||0));
   setText('siCurrency',userProfile.currency||'USD');
   const pp=document.getElementById('profilePlatforms');

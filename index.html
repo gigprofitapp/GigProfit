@@ -285,7 +285,7 @@
       <button class="filter-btn" onclick="setEarnFilter('year',this)">Year</button>
     </div>
     <div class="earn-summary">
-      <div class="earn-total-label">Total Earnings</div>
+      <div class="earn-total-label" id="earnTotalLabel">TOTAL EARNINGS</div>
       <div class="earn-total" id="earnTotal">$0.00</div>
       <div class="earn-change" id="earnChange"></div>
     </div>
@@ -383,7 +383,14 @@
   <div class="page-scroll" style="padding-top:0">
     <div class="profile-hero">
       <div class="profile-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-      <div><div class="profile-name" id="profileName">Driver</div><div class="profile-email" id="profileEmail"></div></div>
+      <div><div class="profile-name" id="profileName">Driver</div></div>
+    </div>
+    <div class="sg-label">ACCOUNT</div>
+    <div class="sg-card">
+      <div class="sg-row">
+        <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Email</div><div class="sg-value" id="profileEmail"></div></div>
+      </div>
     </div>
     <div class="sg-label">PREFERENCES</div>
     <div class="sg-card">
