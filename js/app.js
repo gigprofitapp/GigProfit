@@ -278,49 +278,75 @@ function buildInsight(weekInc){
 function setEarnFilter(f,btn){
   earnFilter=f;
   document.querySelectorAll('#earningsPage .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');loadEarnings();
+  btn.classList.add('active');
+  loadEarnings();
 }
+
 async function loadEarnings(){
   if(!currentUser)return;
   const {start,end}=getRange(earnFilter);
-  // Update total label to show period
   const periodLabels={day:'Today',week:'This Week',month:'This Month',year:'This Year'};
   const el=document.getElementById('earnTotalLabel');
   if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter].toUpperCase();
-  const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end).order('date',{ascending:false});
+
+  const {data:inc}=await db.from('gp_income').select('*')
+    .eq('user_id',currentUser.id)
+    .gte('date',start).lte('date',end)
+    .order('date',{ascending:false});
+
   const filtered=inc||[];
   const total=sumF(filtered,'amount')+sumF(filtered,'tips');
   setText('earnTotal',fmt(total));
   drawBarChart('earnChart',filtered,earnFilter,start,'#1ed8a4');
+
   // Platform breakdown
   const byPlat={};
-  filtered.forEach(r=>{const p=r.platform;byPlat[p]=(byPlat[p]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
+  filtered.forEach(r=>{byPlat[r.platform]=(byPlat[r.platform]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
   const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]);
   const colors=['#1ed8a4','#4a90d9','#f59e0b','#f16c6c','#8b5cf6','#34d399','#fb923c'];
   const pl=document.getElementById('platformList');
-  if(!pl)return;
-  if(entries.length===0){pl.innerHTML='<div class="empty-wrap"><p>No earnings in this period</p></div>';return;}
-  pl.innerHTML=entries.map(([p,amt],i)=>{
-    const pct=total>0?Math.round((amt/total)*100):0;
-    return `<div class="list-row">
-      <div class="plat-dot" style="background:${colors[i%colors.length]}"></div>
-      <div class="plat-info">
-        <div class="plat-name">${p}</div>
-        <div class="plat-bar-wrap"><div class="plat-bar" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+  if(pl){
+    if(entries.length===0){
+      pl.innerHTML='<div class="empty-wrap"><p>No earnings in this period</p></div>';
+    }else{
+      pl.innerHTML=entries.map(([p,amt],i)=>{
+        const pct=total>0?Math.round((amt/total)*100):0;
+        return `<div class="list-row">
+          <div class="plat-dot" style="background:${colors[i%colors.length]}"></div>
+          <div class="plat-info">
+            <div class="plat-name">${p}</div>
+            <div class="plat-bar-wrap"><div class="plat-bar" style="width:${pct}%;background:${colors[i%colors.length]}"></div></div>
+          </div>
+          <div class="plat-right">
+            <div class="plat-amt">${fmt(amt)}</div>
+            <div class="plat-pct">${pct}%</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // History with edit/delete per entry
+  const hl=document.getElementById('historyList');
+  if(!hl)return;
+  if(filtered.length===0){
+    hl.innerHTML='<div class="empty-wrap"><p>No entries in this period</p></div>';
+    return;
+  }
+  hl.innerHTML=filtered.map(r=>{
+    const amt=parseFloat(r.amount)+parseFloat(r.tips||0);
+    return `<div class="hist-item">
+      <div class="hist-left">
+        <div class="hist-date">${formatDateLong(r.date)}</div>
+        <div class="hist-platforms">${r.platform}${r.hours?\` · \${r.hours}hrs\`:''}${r.miles?\` · \${r.miles}mi\`:''}</div>
       </div>
-      <div class="plat-right">
-        <div class="plat-amt">${fmt(amt)}</div>
-        <div class="plat-pct">${pct}%</div>
+      <div class="hist-amt">${fmt(amt)}</div>
+      <div class="act-actions">
+        <button class="act-edit-btn" onclick="editIncome('${r.id}')">${editSvg()}</button>
+        <button class="act-del-btn" onclick="deleteIncome('${r.id}')">${delSvg()}</button>
       </div>
     </div>`;
   }).join('');
-  // History
-  const byDate={};
-  filtered.forEach(r=>{byDate[r.date]=byDate[r.date]||{amt:0,plats:new Set()};byDate[r.date].amt+=parseFloat(r.amount)+parseFloat(r.tips||0);byDate[r.date].plats.add(r.platform);});
-  const hl=document.getElementById('historyList');
-  if(!hl)return;
-  const sorted=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
-  hl.innerHTML=sorted.map(([date,d])=>`<div class="hist-item"><div><div class="hist-date">${formatDateLong(date)}</div><div class="hist-platforms">${[...d.plats].join(', ')}</div></div><div class="hist-amt">${fmt(d.amt)}</div></div>`).join('');
 }
 
 // ── EXPENSES ─────────────────────────────────

@@ -562,3 +562,11 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   cursor:pointer;transition:all 0.15s;
 }
 .btn-delete-account:active{background:rgba(241,108,108,0.08);color:var(--red);border-color:rgba(241,108,108,0.3)}
+
+/* ── HISTORY ITEM WITH ACTIONS ─────────────── */
+.hist-item{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);gap:12px}
+.hist-item:last-child{border-bottom:none}
+.hist-left{flex:1;min-width:0}
+.hist-date{font-size:0.875rem;font-weight:500}
+.hist-platforms{font-size:0.6875rem;color:var(--text3);margin-top:2px}
+.hist-amt{font-size:0.9375rem;font-weight:700;color:var(--teal);letter-spacing:-0.2px;font-variant-numeric:tabular-nums;flex-shrink:0}
