@@ -196,10 +196,17 @@ async function loadHome(){
   const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
   const mProfit=mGross-mExp-mTax;
   const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
+  // Hide goal section if no goal set
+  const goalRow=document.querySelector('.ph-goal-row');
+  const goalBarEl=document.querySelector('.ph-bar');
+  if(goalRow) goalRow.style.display=goal>0?'flex':'none';
+  if(goalBarEl) goalBarEl.style.display=goal>0?'block':'none';
   setText('goalPctNum',Math.round(pct)+'%');
   setText('goalAmt',fmtShort(goal));
   document.getElementById('goalFill').style.width=pct+'%';
   const remaining=Math.max(0,goal-mProfit);
+  const hintEl=document.getElementById('homeGoalHint');
+  if(hintEl) hintEl.style.display=goal>0?'flex':'none';
   setText('goalHintAmt',fmtShort(remaining));
 
   // Week stats
@@ -271,16 +278,13 @@ function setEarnFilter(f,btn){
 }
 async function loadEarnings(){
   if(!currentUser)return;
-  // For day filter, fetch last 7 days so chart has context
   const {start,end}=getRange(earnFilter);
-  const fetchStart = earnFilter==='day' ? getRange('week').start : start;
-  const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',fetchStart).lte('date',end).order('date',{ascending:false});
-  // For totals, only use the actual filter range
-  const filtered = earnFilter==='day' ? (inc||[]).filter(r=>r.date===end) : (inc||[]);
+  const {data:inc}=await db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end).order('date',{ascending:false});
+  const filtered=inc||[];
   const total=sumF(filtered,'amount')+sumF(filtered,'tips');
   setText('earnTotal',fmt(total));
-  drawBarChart('earnChart',inc||[],earnFilter,start,'#1ed8a4');
-  // Platform list
+  drawBarChart('earnChart',filtered,earnFilter,start,'#1ed8a4');
+  // Platform breakdown
   const byPlat={};
   filtered.forEach(r=>{const p=r.platform;byPlat[p]=(byPlat[p]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
   const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]);
@@ -304,7 +308,7 @@ async function loadEarnings(){
   }).join('');
   // History
   const byDate={};
-  (inc||[]).forEach(r=>{byDate[r.date]=byDate[r.date]||{amt:0,plats:new Set()};byDate[r.date].amt+=parseFloat(r.amount)+parseFloat(r.tips||0);byDate[r.date].plats.add(r.platform);});
+  filtered.forEach(r=>{byDate[r.date]=byDate[r.date]||{amt:0,plats:new Set()};byDate[r.date].amt+=parseFloat(r.amount)+parseFloat(r.tips||0);byDate[r.date].plats.add(r.platform);});
   const hl=document.getElementById('historyList');
   if(!hl)return;
   const sorted=Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
@@ -583,16 +587,15 @@ function drawBarChart(canvasId,inc,period,start,color){
     ['J','F','M','A','M','J','J','A','S','O','N','D'].forEach(m=>{labels.push(m);data.push(0);});
     inc.forEach(r=>{const m=parseInt(r.date.split('-')[1])-1;data[m]+=parseFloat(r.amount)+parseFloat(r.tips||0);});
   }else{
-    // Day — show last 7 days as a mini trend
-    const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(days[d.getDay()]);data.push(0);}
-    inc.forEach(r=>{
-      const d=new Date(r.date+'T00:00:00');
-      const today=new Date();today.setHours(0,0,0,0);
-      const diff=Math.round((today-d)/86400000);
-      const i=6-diff;
-      if(i>=0&&i<7)data[i]+=parseFloat(r.amount)+parseFloat(r.tips||0);
-    });
+    // Day — show platforms as bars for today
+    const byPlat={};
+    inc.forEach(r=>{byPlat[r.platform]=(byPlat[r.platform]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
+    const entries=Object.entries(byPlat).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    if(entries.length===0){
+      labels.push('Today');data.push(0);
+    }else{
+      entries.forEach(([p,v])=>{labels.push(p.length>5?p.slice(0,5):'...');data.push(v);});
+    }
   }
 
   const maxV=Math.max(...data,1);

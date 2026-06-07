@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gigprofit-v7';
+const CACHE_NAME = 'gigprofit-v8';
 const ASSETS = [
   '/GigProfit/',
   '/GigProfit/index.html',
