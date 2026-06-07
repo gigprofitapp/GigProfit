@@ -38,14 +38,14 @@
       <button class="auth-tab" onclick="switchAuthTab('signup',this)">Create Account</button>
     </div>
     <div id="loginForm" class="auth-form active">
-      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="off"></div>
       <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
       <button id="signInBtn" class="btn-primary" onclick="signIn()">Sign In</button>
     </div>
     <div id="signupForm" class="auth-form">
-      <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Aziz Salimi" autocomplete="name"></div>
-      <div class="field"><label>Email</label><input type="email" id="signupEmail" placeholder="you@email.com" autocomplete="email"></div>
-      <div class="field"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Your full name" autocomplete="nope" readonly onfocus="this.removeAttribute('readonly')"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupEmail" placeholder="you@email.com" autocomplete="nope" readonly onfocus="this.removeAttribute('readonly')"></div>
+      <div class="field"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters" autocomplete="new-password" data-lpignore="true"></div>
       <button id="signUpBtn" class="btn-primary" onclick="signUp()">Create Account</button>
     </div>
     <div class="divider"><span>or</span></div>
@@ -439,6 +439,7 @@
       </div>
     </div>
     <button class="btn-logout2" onclick="signOut()">Log Out</button>
+    <button class="btn-delete-account" onclick="showDeleteAccount()">Delete Account</button>
   </div>
 </div>
 
@@ -585,6 +586,32 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('currencyModal')">Cancel</button>
       <button class="btn-primary" onclick="saveCurrency()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div id="deleteAccountModal" class="modal-overlay" onclick="if(event.target===this)closeModal('deleteAccountModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h3 style="color:var(--red)">Delete Account</h3>
+      <button class="modal-close" onclick="closeModal('deleteAccountModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:2.5rem;margin-bottom:12px">⚠️</div>
+        <p style="font-size:0.9375rem;font-weight:600;margin-bottom:8px">This cannot be undone</p>
+        <p style="font-size:0.84375rem;color:var(--text3);line-height:1.6">All your income, expenses, and account data will be permanently deleted. You will not be able to recover this data.</p>
+      </div>
+      <div class="form-group">
+        <label>Type DELETE to confirm</label>
+        <input type="text" id="deleteConfirmInput" placeholder="DELETE" autocomplete="off">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('deleteAccountModal')">Cancel</button>
+      <button class="btn-primary" style="background:var(--red);color:#fff" onclick="deleteAccount()">Delete My Account</button>
     </div>
   </div>
 </div>

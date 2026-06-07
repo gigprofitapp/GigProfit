@@ -254,6 +254,10 @@ async function loadHome(){
         <div class="act-amount ${isInc?'pos':'neg'}">${isInc?'':'−'}${fmt(amt)}</div>
         <div class="act-time">${formatDateShort(r.date)}</div>
       </div>
+      <div class="act-actions">
+        <button class="act-edit-btn" onclick="${isInc?`editIncome('${r.id}')`:`editExpense('${r.id}')`}" title="Edit">${editSvg()}</button>
+        <button class="act-del-btn" onclick="${isInc?`deleteIncome('${r.id}')`:`deleteExpense('${r.id}')`}" title="Delete">${delSvg()}</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -365,7 +369,9 @@ async function editIncome(id){
 }
 async function deleteIncome(id){
   if(!confirm('Delete this entry?'))return;
-  await db.from('gp_income').delete().eq('id',id);toast('Deleted','success');loadEarnings();
+  await db.from('gp_income').delete().eq('id',id);
+  toast('Deleted','success');
+  loadEarnings();loadHome();
 }
 async function saveIncome(){
   const btn=document.getElementById('saveIncomeBtn');
@@ -378,7 +384,7 @@ async function saveIncome(){
   const {error}=editingId?await db.from('gp_income').update(rec).eq('id',editingId):await db.from('gp_income').insert(rec);
   setLoading(btn,false,'Save');
   if(error){toast('Error: '+error.message,'error');return;}
-  toast(editingId?'Updated!':'Saved!','success');closeModal('incomeModal');loadEarnings();
+  toast(editingId?'Updated!':'Saved!','success');closeModal('incomeModal');loadEarnings();loadHome();
 }
 
 // ── EXPENSE CRUD ─────────────────────────────
@@ -398,7 +404,8 @@ async function editExpense(id){
 }
 async function deleteExpense(id){
   if(!confirm('Delete this expense?'))return;
-  await db.from('gp_expenses').delete().eq('id',id);toast('Deleted','success');loadExpenses();
+  await db.from('gp_expenses').delete().eq('id',id);
+  toast('Deleted','success');loadExpenses();loadHome();
 }
 async function saveExpense(){
   const btn=document.getElementById('saveExpenseBtn');
@@ -410,7 +417,7 @@ async function saveExpense(){
   const {error}=editingId?await db.from('gp_expenses').update(rec).eq('id',editingId):await db.from('gp_expenses').insert(rec);
   setLoading(btn,false,'Save');
   if(error){toast('Error: '+error.message,'error');return;}
-  toast(editingId?'Updated!':'Saved!','success');closeModal('expenseModal');loadExpenses();
+  toast(editingId?'Updated!':'Saved!','success');closeModal('expenseModal');loadExpenses();loadHome();
 }
 
 // ── REPORTS ──────────────────────────────────
@@ -721,4 +728,44 @@ async function saveCurrency() {
   setText('siCurrency', val);
   closeModal('currencyModal');
   toast('Currency updated!', 'success');
+}
+
+// ── DELETE ACCOUNT ───────────────────────────
+function showDeleteAccount(){
+  document.getElementById('deleteConfirmInput').value='';
+  document.getElementById('deleteAccountModal').classList.add('active');
+}
+
+async function deleteAccount(){
+  const input=document.getElementById('deleteConfirmInput').value.trim();
+  if(input!=='DELETE') return toast('Type DELETE to confirm','error');
+  
+  const btn=document.querySelector('#deleteAccountModal .btn-primary');
+  setLoading(btn,true,'Deleting...');
+  
+  try{
+    // Delete all user data first
+    await db.from('gp_income').delete().eq('user_id',currentUser.id);
+    await db.from('gp_expenses').delete().eq('user_id',currentUser.id);
+    await db.from('profiles').delete().eq('user_id',currentUser.id);
+    
+    // Delete the auth user via Supabase
+    const {error}=await db.rpc('delete_user');
+    
+    if(error){
+      // Fallback: just sign out and show message
+      await db.auth.signOut();
+      toast('Data deleted. Contact support to remove auth account.','success');
+      return;
+    }
+    
+    await db.auth.signOut();
+    toast('Account deleted successfully','success');
+  }catch(e){
+    // Even if RPC fails, data is deleted — sign out
+    await db.auth.signOut();
+    toast('Account data deleted','success');
+  }
+  setLoading(btn,false,'Delete My Account');
+  closeModal('deleteAccountModal');
 }

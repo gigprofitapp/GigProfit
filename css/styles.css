@@ -114,7 +114,7 @@ input,select{font-family:inherit;color:inherit}
 .ob-nav .btn-back{flex:1}.ob-nav .btn-primary{flex:2}
 
 /* ── APP HEADER ──────────────────────────────── */
-.app-header{padding:max(14px,env(safe-area-inset-top)) 20px 12px;background:var(--bg);flex-shrink:0}
+.app-header{padding:54px 20px 12px;background:var(--bg);flex-shrink:0}
 .app-header-row{display:flex;justify-content:space-between;align-items:center}
 .app-header h2{font-size:1.125rem;font-weight:700;letter-spacing:-0.3px}
 .icon-btn{width:36px;height:36px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;border:1px solid var(--border2);color:var(--text3)}
@@ -135,7 +135,7 @@ input,select{font-family:inherit;color:inherit}
 /* Greeting header */
 .home-header{
   display:flex;justify-content:space-between;align-items:flex-start;
-  padding:max(52px,calc(env(safe-area-inset-top) + 16px)) 20px 14px;
+  padding:60px 20px 14px;
 }
 .home-header-left{display:flex;align-items:center;gap:13px}
 .home-avatar{
@@ -287,22 +287,22 @@ input,select{font-family:inherit;color:inherit}
 .glance-card{
   margin:0 16px 14px;
   background:var(--card);border:1px solid var(--border2);
-  border-radius:var(--r-card);padding:18px 20px;
+  border-radius:var(--r-card);padding:16px 14px;
 }
 .glance-grid{display:grid;grid-template-columns:1fr 1fr 1fr}
-.gl-col{display:flex;align-items:center;gap:10px;padding:0 16px}
+.gl-col{display:flex;align-items:center;gap:8px;padding:0 8px}
 .gl-col:first-child{padding-left:0}
 .gl-col:last-child{padding-right:0}
 .gl-col:nth-child(2){border-left:1px solid var(--border);border-right:1px solid var(--border)}
-.gl-icon-wrap{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gl-icon-wrap{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gl-icon-wrap.teal{background:rgba(30,216,164,0.12)}
 .gl-icon-wrap.blue{background:rgba(74,144,217,0.12)}
 .gl-icon-wrap.green{background:rgba(30,216,164,0.12)}
-.gl-icon-wrap svg{width:18px;height:18px}
+.gl-icon-wrap svg{width:15px;height:15px}
 .gl-text{}
-.gl-val{font-size:1rem;font-weight:700;letter-spacing:-0.3px;font-variant-numeric:tabular-nums;line-height:1.2}
-.gl-val em{font-size:0.75rem;font-weight:500;font-style:normal;color:var(--text3)}
-.gl-label{font-size:0.6875rem;color:var(--text3);margin-top:2px;font-weight:400}
+.gl-val{font-size:0.875rem;font-weight:700;letter-spacing:-0.2px;font-variant-numeric:tabular-nums;line-height:1.2;white-space:nowrap}
+.gl-val em{font-size:0.625rem;font-weight:500;font-style:normal;color:var(--text3)}
+.gl-label{font-size:0.5625rem;color:var(--text3);margin-top:2px;font-weight:400;white-space:nowrap}
 
 /* ── RECENT ACTIVITY ─────────────────────────── */
 .activity-card{
@@ -461,8 +461,8 @@ input,select{font-family:inherit;color:inherit}
 .sg-value{font-size:0.6875rem;color:var(--text3);margin-top:1px}
 .sg-right{font-size:0.8125rem;color:var(--text2);display:flex;align-items:center;gap:3px}
 .sg-right svg{width:14px;height:14px}
-.plat-chips-wrap{display:flex;flex-wrap:wrap;gap:7px;padding:12px 16px}
-.plat-chip2{padding:5px 12px;background:rgba(30,216,164,0.08);border:1px solid rgba(30,216,164,0.18);border-radius:var(--r-pill);font-size:0.75rem;color:var(--teal);font-weight:500}
+.plat-chips-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;min-height:52px;align-items:center}
+.plat-chip2{padding:6px 14px;background:rgba(30,216,164,0.1);border:1px solid rgba(30,216,164,0.25);border-radius:var(--r-pill);font-size:0.8125rem;color:var(--teal);font-weight:600}
 .btn-logout2{width:calc(100% - 32px);margin:0 16px 28px;padding:13px;background:rgba(241,108,108,0.08);color:var(--red);border:1px solid rgba(241,108,108,0.18);border-radius:12px;font-weight:600;font-size:0.9375rem;display:flex;align-items:center;justify-content:center;gap:8px}
 
 /* ── MODALS ──────────────────────────────────── */
@@ -542,3 +542,23 @@ input,select{font-family:inherit;color:inherit}
 ::-webkit-scrollbar{width:0;background:transparent}
 
 select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px!important}
+
+/* ── ACTIVITY ROW ACTIONS ──────────────────── */
+.act-actions{display:flex;gap:6px;flex-shrink:0;margin-left:8px}
+.act-edit-btn{width:32px;height:32px;border-radius:8px;background:rgba(74,144,217,0.12);border:none;color:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 0.15s}
+.act-edit-btn:active{background:rgba(74,144,217,0.25)}
+.act-edit-btn svg{width:14px;height:14px}
+.act-del-btn{width:32px;height:32px;border-radius:8px;background:rgba(241,108,108,0.12);border:none;color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background 0.15s}
+.act-del-btn:active{background:rgba(241,108,108,0.25)}
+.act-del-btn svg{width:14px;height:14px}
+
+/* ── DELETE ACCOUNT BUTTON ─────────────────── */
+.btn-delete-account{
+  width:calc(100% - 32px);margin:0 16px 40px;
+  padding:13px;background:transparent;
+  color:var(--text2);border:1px solid var(--border2);
+  border-radius:12px;font-weight:500;font-size:0.875rem;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-delete-account:active{background:rgba(241,108,108,0.08);color:var(--red);border-color:rgba(241,108,108,0.3)}
