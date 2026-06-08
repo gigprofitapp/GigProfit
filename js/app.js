@@ -826,7 +826,46 @@ async function saveCurrency() {
   toast('Currency updated!', 'success');
 }
 
-// ── DELETE ACCOUNT ───────────────────────────
+// ── CHANGE EMAIL / PASSWORD ───────────────────
+function showChangeEmail(){
+  document.getElementById('newEmailInput').value='';
+  document.getElementById('changeEmailModal').classList.add('active');
+}
+
+async function saveEmail(){
+  const email=document.getElementById('newEmailInput').value.trim();
+  if(!email) return toast('Enter a new email','error');
+  const btn=document.getElementById('saveEmailBtn');
+  setLoading(btn,true,'Updating...');
+  const {error}=await db.auth.updateUser({email});
+  setLoading(btn,false,'Update Email');
+  if(error){toast(error.message,'error');return;}
+  closeModal('changeEmailModal');
+  toast('Confirmation sent to new email','success');
+}
+
+function showChangePassword(){
+  document.getElementById('newPasswordInput').value='';
+  document.getElementById('confirmPasswordInput').value='';
+  document.getElementById('changePasswordModal').classList.add('active');
+}
+
+async function savePassword(){
+  const pw=document.getElementById('newPasswordInput').value;
+  const confirm=document.getElementById('confirmPasswordInput').value;
+  if(!pw) return toast('Enter a new password','error');
+  if(pw.length<6) return toast('Password must be 6+ characters','error');
+  if(pw!==confirm) return toast('Passwords do not match','error');
+  const btn=document.getElementById('savePasswordBtn');
+  setLoading(btn,true,'Updating...');
+  const {error}=await db.auth.updateUser({password:pw});
+  setLoading(btn,false,'Update Password');
+  if(error){toast(error.message,'error');return;}
+  closeModal('changePasswordModal');
+  toast('Password updated!','success');
+}
+
+
 function showDeleteAccount(){
   document.getElementById('deleteConfirmInput').value='';
   document.getElementById('deleteAccountModal').classList.add('active');

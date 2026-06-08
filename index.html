@@ -439,9 +439,15 @@
     </div>
     <div class="sg-label">ACCOUNT</div>
     <div class="sg-card">
-      <div class="sg-row">
+      <div class="sg-row" onclick="showChangeEmail()">
         <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
         <div class="sg-content"><div class="sg-label2">Email</div><div class="sg-value" id="profileEmail"></div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="sg-row" onclick="showChangePassword()">
+        <div class="sg-icon gray"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="sg-content"><div class="sg-label2">Password</div><div class="sg-value">Change password</div></div>
+        <div class="sg-right"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
       </div>
     </div>
     <div class="sg-label">PREFERENCES</div>
@@ -642,7 +648,39 @@
   </div>
 </div>
 
-<!-- DELETE ACCOUNT MODAL -->
+<!-- CHANGE EMAIL MODAL -->
+<div id="changeEmailModal" class="modal-overlay" onclick="if(event.target===this)closeModal('changeEmailModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><h3>Change Email</h3><button class="modal-close" onclick="closeModal('changeEmailModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>New Email</label><input type="email" id="newEmailInput" placeholder="new@email.com" autocomplete="off"></div>
+      <p style="font-size:0.8rem;color:var(--text3);line-height:1.5">A confirmation link will be sent to your new email address.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('changeEmailModal')">Cancel</button>
+      <button id="saveEmailBtn" class="btn-primary" onclick="saveEmail()">Update Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div id="changePasswordModal" class="modal-overlay" onclick="if(event.target===this)closeModal('changePasswordModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header"><h3>Change Password</h3><button class="modal-close" onclick="closeModal('changePasswordModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>New Password</label><input type="password" id="newPasswordInput" placeholder="Min 6 characters" autocomplete="new-password"></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPasswordInput" placeholder="Repeat password" autocomplete="new-password"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+      <button id="savePasswordBtn" class="btn-primary" onclick="savePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+
 <div id="deleteAccountModal" class="modal-overlay" onclick="if(event.target===this)closeModal('deleteAccountModal')">
   <div class="modal">
     <div class="modal-handle"></div>
