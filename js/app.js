@@ -216,18 +216,29 @@ async function loadHome(){
   const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
   const mProfit=mGross-mExp-mTax;
   const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
-  // Hide goal section if no goal set
+  // Header goal card
+  const goalCard=document.getElementById('homeGoalCard');
+  const helperText=document.getElementById('homeHelperText');
+  if(goal>0){
+    if(goalCard) goalCard.style.display='flex';
+    if(helperText) helperText.style.display='none';
+    setText('hgcAmount',fmtShort(goal));
+    setText('hgcPct',Math.round(pct)+'% of goal');
+    const bar=document.getElementById('hgcBar');
+    if(bar) bar.style.width=pct+'%';
+  }else{
+    if(goalCard) goalCard.style.display='none';
+    if(helperText) helperText.style.display='flex';
+  }
+  // Keep profit card goal bar in sync too
   const goalRow=document.querySelector('.ph-goal-row');
   const goalBarEl=document.querySelector('.ph-bar');
   if(goalRow) goalRow.style.display=goal>0?'flex':'none';
   if(goalBarEl) goalBarEl.style.display=goal>0?'block':'none';
   setText('goalPctNum',Math.round(pct)+'%');
   setText('goalAmt',fmtShort(goal));
-  document.getElementById('goalFill').style.width=pct+'%';
-  const remaining=Math.max(0,goal-mProfit);
-  const hintEl=document.getElementById('homeGoalHint');
-  if(hintEl) hintEl.style.display=goal>0?'flex':'none';
-  setText('goalHintAmt',fmtShort(remaining));
+  const gf=document.getElementById('goalFill');
+  if(gf) gf.style.width=pct+'%';
 
   // Week stats
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');

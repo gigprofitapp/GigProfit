@@ -113,23 +113,37 @@
 
   <!-- Greeting -->
   <div class="home-header">
-    <div class="home-header-left">
-      <div class="home-avatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div>
-        <div class="home-greeting" id="homeGreeting">Good afternoon,</div>
-        <div class="home-name" id="homeName">Aziz 👋</div>
-        <div class="home-goal-hint" id="homeGoalHint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-          You're <span id="goalHintAmt">$0</span> away from your monthly goal
+    <div class="home-header-top">
+      <div class="home-header-left">
+        <div class="home-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <div class="home-greeting" id="homeGreeting">Good morning,</div>
+          <div class="home-name" id="homeName">Driver 👋</div>
         </div>
       </div>
+      <button class="notif-btn" onclick="toggleTheme()">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <div class="notif-dot"></div>
+      </button>
     </div>
-    <button class="notif-btn" onclick="toggleTheme()">
-      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      <div class="notif-dot"></div>
-    </button>
+    <!-- Goal card — shown when goal set, helper text when not -->
+    <div id="homeGoalCard" class="home-goal-card" onclick="showPage('profile')">
+      <div class="hgc-left">
+        <div class="hgc-label">Monthly Goal</div>
+        <div class="hgc-amount" id="hgcAmount">$0</div>
+      </div>
+      <div class="hgc-right">
+        <div class="hgc-pct" id="hgcPct">0%</div>
+        <div class="hgc-bar-wrap"><div class="hgc-bar" id="hgcBar" style="width:0%"></div></div>
+      </div>
+      <svg class="hgc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div id="homeHelperText" class="home-helper-text" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Set your monthly goal to start tracking progress
+    </div>
   </div>
 
   <!-- Profit Hero -->
