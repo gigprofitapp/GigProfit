@@ -248,29 +248,27 @@
     <div class="week-grid">
       <div class="wg-col">
         <div class="wg-label">
-          <div class="wg-icon earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
-          Earnings
+          <div class="wg-icon earn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          Profit
         </div>
         <div class="wg-val positive" id="weekEarn">$0</div>
-        <div class="wg-change" id="weekEarnChg"></div>
       </div>
       <div class="wg-col">
         <div class="wg-label">
-          <div class="wg-icon exp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
-          Expenses
+          <div class="wg-icon" style="background:rgba(74,144,217,0.14)"><svg viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          Hours
         </div>
-        <div class="wg-val negative" id="weekExp">$0</div>
-        <div class="wg-change" id="weekExpChg"></div>
+        <div class="wg-val" style="color:var(--text)" id="weekExp">0.0</div>
       </div>
       <div class="wg-col">
         <div class="wg-label">
-          <div class="wg-icon tax"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          Tax Reserve
+          <div class="wg-icon" style="background:rgba(139,92,246,0.14)"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          Profit/hr
         </div>
         <div class="wg-val warning" id="weekTax">$0</div>
-        <div class="wg-change neutral" id="weekTaxNote"></div>
       </div>
     </div>
+    <div class="week-helper" id="weekHelper">Your weekly stats will appear here</div>
   </div>
 
   <!-- Today at a Glance -->

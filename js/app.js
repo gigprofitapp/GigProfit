@@ -250,10 +250,15 @@ async function loadHome(){
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
   const wExpTotal=sumF(wExp,'amount');
   const wTax=Math.max(0,wGross-wExpTotal)*0.9235*txRate;
-  setText('weekEarn',fmtShort(wGross));
-  setText('weekExp',fmtShort(wExpTotal));
-  setText('weekTax',fmtShort(wTax));
-  setText('weekTaxNote',Math.round(txRate*100)+'% of earnings');
+  const wProfit=Math.max(0,wGross-wExpTotal-wTax);
+  const wHours=sumF(wInc,'hours');
+  const wProfitPerHr=wHours>0?(wProfit/wHours):0;
+  setText('weekEarn',fmtShort(wProfit));
+  setText('weekExp',wHours>0?wHours.toFixed(1):'0.0');
+  setText('weekTax',wProfitPerHr>0?fmtShort(wProfitPerHr):'$0');
+  // Show helper text when no data
+  const weekHelper=document.getElementById('weekHelper');
+  if(weekHelper) weekHelper.style.display=wGross>0?'none':'block';
 
   // Glance
   const tHours=sumF(tInc,'hours');
