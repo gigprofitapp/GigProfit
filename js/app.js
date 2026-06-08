@@ -230,6 +230,7 @@ async function loadHome(){
     if(helperText) helperText.style.display='none';
     setText('hgcAmount',fmtShort(goal));
     setText('hgcPct',Math.round(pct)+'% of goal');
+
     const bar=document.getElementById('hgcBar');
     if(bar) bar.style.width=pct+'%';
   }else{
