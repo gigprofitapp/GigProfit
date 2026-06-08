@@ -205,9 +205,15 @@ async function loadHome(){
   const tax=Math.max(0,gross-expenses)*0.9235*txRate;
   const profit=gross-expenses-tax;
   setText('heroProfit',fmt(profit));
-  setText('heroEarnings',fmt(gross));
-  setText('heroExpenses',fmt(expenses));
-  setText('heroTax',fmt(tax));
+  setText('heroEarnings',fmtShort(gross));
+  setText('heroExpenses',fmtShort(expenses));
+  setText('heroTax',fmtShort(tax));
+  // Update sub text based on whether there's data
+  const subEl=document.getElementById('heroSub');
+  if(subEl){
+    const periodSubs={today:'What you actually kept today',week:'What you actually kept this week',month:'What you actually kept this month'};
+    subEl.textContent=gross>0?(periodSubs[homePeriod]||'What you actually kept'):'Start logging to track your real profit';
+  }
 
   // Goal
   const goal=userProfile?.monthly_goal||0;

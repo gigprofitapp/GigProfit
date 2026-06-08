@@ -214,33 +214,36 @@ input,select{font-family:inherit;color:inherit}
 .ph-sub{font-size:0.8125rem;color:var(--text3);font-weight:400;margin-bottom:20px}
 
 /* Breakdown row */
-.ph-breakdown{
-  display:grid;grid-template-columns:1fr 1fr 1fr;
-  border-top:1px solid var(--border);
-  padding-top:18px;margin-bottom:20px;gap:0;
+/* Mini stats row */
+.ph-mini-stats{
+  display:flex;align-items:center;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;
+  margin-bottom:16px;gap:0;
 }
-.ph-item{display:flex;flex-direction:column;gap:6px;padding-right:16px}
-.ph-item:nth-child(2){padding:0 16px;border-left:1px solid var(--border);border-right:1px solid var(--border)}
-.ph-item:nth-child(3){padding-left:16px}
-.ph-item-label{
+.ph-mini-item{flex:1;display:flex;flex-direction:column;gap:5px}
+.ph-mini-label{
   display:flex;align-items:center;gap:5px;
-  font-size:0.6875rem;color:var(--text3);font-weight:400;white-space:nowrap;
+  font-size:0.625rem;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.06em;
 }
+.ph-mini-val{font-size:1rem;font-weight:700;letter-spacing:-0.3px;font-variant-numeric:tabular-nums;color:var(--text)}
+.ph-mini-divider{width:1px;height:36px;background:var(--border);flex-shrink:0;margin:0 12px}
 .ph-icon{
-  width:18px;height:18px;border-radius:4px;
+  width:16px;height:16px;border-radius:4px;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.ph-icon svg{width:11px;height:11px}
+.ph-icon svg{width:9px;height:9px}
 .ph-icon.earn{background:rgba(30,216,164,0.15)}
 .ph-icon.earn svg{color:var(--teal)}
 .ph-icon.exp{background:rgba(241,108,108,0.15)}
 .ph-icon.exp svg{color:var(--red)}
 .ph-icon.tax{background:rgba(232,168,56,0.15)}
 .ph-icon.tax svg{color:var(--yellow)}
-.ph-item-val{font-size:1.1875rem;font-weight:700;letter-spacing:-0.5px;font-variant-numeric:tabular-nums}
-.ph-item-val.earn{color:var(--text)}
-.ph-item-val.exp{color:var(--text)}
-.ph-item-val.tax{color:var(--text)}
+
+/* Goal section */
+.ph-goal-section{margin-top:4px}
+.ph-goal-sub{font-size:0.6875rem;color:var(--text3);margin-top:5px;font-weight:400}
 
 /* Goal bar */
 .ph-goal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}

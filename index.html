@@ -149,7 +149,7 @@
   <!-- Profit Hero -->
   <div class="profit-hero">
     <div class="ph-top">
-      <div class="ph-label">Today's Profit</div>
+      <div class="ph-label">TODAY'S PROFIT</div>
       <div class="ph-period-wrap">
         <button class="ph-pill" onclick="togglePeriodDropdown()">
           <span id="periodLabel">Today</span>
@@ -162,42 +162,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Amount -->
     <div class="ph-amount" id="heroProfit">$0.00</div>
-    <div class="ph-sub">What you actually kept today</div>
-    <div class="ph-breakdown">
-      <div class="ph-item">
-        <div class="ph-item-label">
+    <div class="ph-sub" id="heroSub">Start logging to track your real profit</div>
+
+    <!-- Mini stats row -->
+    <div class="ph-mini-stats">
+      <div class="ph-mini-item">
+        <div class="ph-mini-label">
           <div class="ph-icon earn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
           Earnings
         </div>
-        <div class="ph-item-val earn" id="heroEarnings">$0.00</div>
+        <div class="ph-mini-val" id="heroEarnings">$0</div>
       </div>
-      <div class="ph-item">
-        <div class="ph-item-label">
+      <div class="ph-mini-divider"></div>
+      <div class="ph-mini-item">
+        <div class="ph-mini-label">
           <div class="ph-icon exp">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           </div>
           Expenses
         </div>
-        <div class="ph-item-val exp" id="heroExpenses">$0.00</div>
+        <div class="ph-mini-val" id="heroExpenses">$0</div>
       </div>
-      <div class="ph-item">
-        <div class="ph-item-label">
+      <div class="ph-mini-divider"></div>
+      <div class="ph-mini-item">
+        <div class="ph-mini-label">
           <div class="ph-icon tax">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
           Tax Reserve
         </div>
-        <div class="ph-item-val tax" id="heroTax">$0.00</div>
+        <div class="ph-mini-val" id="heroTax">$0</div>
       </div>
     </div>
-    <div class="ph-goal-row">
-      <span class="ph-goal-label">Monthly Goal</span>
-      <span class="ph-goal-pct"><em id="goalPctNum">0%</em> of <span id="goalAmt">$0</span></span>
+
+    <!-- Goal progress -->
+    <div class="ph-goal-section" id="phGoalSection">
+      <div class="ph-goal-row">
+        <span class="ph-goal-label">Monthly Goal Progress</span>
+        <span class="ph-goal-pct"><em id="goalPctNum">0%</em></span>
+      </div>
+      <div class="ph-bar"><div class="ph-bar-fill" id="goalFill" style="width:0%"></div></div>
+      <div class="ph-goal-sub">of <span id="goalAmt">$0</span> goal</div>
     </div>
-    <div class="ph-bar"><div class="ph-bar-fill" id="goalFill" style="width:0%"></div></div>
+
   </div>
 
   <!-- Insight -->
