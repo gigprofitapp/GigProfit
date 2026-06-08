@@ -308,10 +308,21 @@
   <!-- Recent Activity -->
   <div class="section-label" style="margin-top:20px">
     RECENT ACTIVITY
-    <button class="section-link" onclick="showPage('earnings')">View all</button>
+    <button class="section-link" id="viewAllBtn" onclick="showPage('earnings')" style="display:none">View all</button>
   </div>
   <div class="activity-card" id="recentActivity">
-    <div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>
+    <div class="ra-empty">
+      <div class="ra-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+          <line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
+      </div>
+      <div class="ra-empty-title">No activity yet</div>
+      <div class="ra-empty-sub">Log your first earning to start tracking profit.</div>
+    </div>
   </div>
   <div style="height:8px"></div>
 

@@ -279,8 +279,25 @@ async function loadHome(){
   // Recent activity
   const all=[...(inc||[]).map(r=>({...r,_k:'income'})),...(exp||[]).map(r=>({...r,_k:'expense'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
   const ra=document.getElementById('recentActivity');
+  const viewAllBtn=document.getElementById('viewAllBtn');
   if(!ra)return;
-  if(all.length===0){ra.innerHTML='<div class="empty-wrap"><div class="empty-icon">💸</div><p>No activity yet. Log your first income!</p></div>';return;}
+  if(all.length===0){
+    if(viewAllBtn) viewAllBtn.style.display='none';
+    ra.innerHTML=`<div class="ra-empty">
+      <div class="ra-empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+          <line x1="9" y1="17" x2="12" y2="17"/>
+        </svg>
+      </div>
+      <div class="ra-empty-title">No activity yet</div>
+      <div class="ra-empty-sub">Log your first earning to start tracking profit.</div>
+    </div>`;
+    return;
+  }
+  if(viewAllBtn) viewAllBtn.style.display='inline';
   ra.innerHTML=all.map(r=>{
     const isInc=r._k==='income';
     const amt=isInc?parseFloat(r.amount)+parseFloat(r.tips||0):parseFloat(r.amount);
