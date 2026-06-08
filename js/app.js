@@ -305,15 +305,25 @@ async function loadHome(){
 }
 
 function buildInsight(weekInc){
+  const labelEl=document.getElementById('insightLabel');
+  const icIcon=document.querySelector('.ic-icon');
+  if(!weekInc||weekInc.length===0){
+    if(labelEl) labelEl.textContent='Smart Insight';
+    if(icIcon) icIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    setText('insightMsg','Log your first earning to unlock smart insights.');
+    return;
+  }
+  // Has data — switch to analytics icon and show real insight
+  if(labelEl) labelEl.textContent='Insight';
+  if(icIcon) icIcon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>';
   const msgs=[];
-  if(!weekInc||weekInc.length===0){setText('insightMsg','Log income to see your personalized insights.');return;}
   const byPlat={};
   weekInc.forEach(r=>{byPlat[r.platform]=(byPlat[r.platform]||0)+parseFloat(r.amount)+parseFloat(r.tips||0);});
   const top=Object.entries(byPlat).sort((a,b)=>b[1]-a[1])[0];
   if(top) msgs.push(`${top[0]} is your top platform this week with ${fmt(top[1])}.`);
   const total=sumF(weekInc,'amount')+sumF(weekInc,'tips');
   if(total>0) msgs.push(`You earned ${fmt(total)} this week. Keep pushing!`);
-  setText('insightMsg',msgs[0]||'Keep logging to unlock insights!');
+  setText('insightMsg',msgs[0]||'Keep logging to unlock more insights!');
 }
 
 // ── EARNINGS ─────────────────────────────────
