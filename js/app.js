@@ -5,7 +5,7 @@ const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null,userProfile=null,editingId=null;
-let homePeriod='today',earnFilter='day',expFilter='day';
+let homePeriod='today',earnFilter='week',expFilter='week';
 let obData={platforms:[],country:'US',currency:'USD',tax_status:'single',monthly_goal:3000};
 
 // ── INIT ─────────────────────────────────────
@@ -205,9 +205,9 @@ async function loadHome(){
   const tax=Math.max(0,gross-expenses)*0.9235*txRate;
   const profit=gross-expenses-tax;
   setText('heroProfit',fmt(profit));
-  setText('heroEarnings',fmt(gross));
-  setText('heroExpenses',fmt(expenses));
-  setText('heroTax',fmt(tax));
+  setText('heroEarnings',fmtShort(gross));
+  setText('heroExpenses',fmtShort(expenses));
+  setText('heroTax',fmtShort(tax));
   // Update sub text based on whether there's data
   const subEl=document.getElementById('heroSub');
   if(subEl){
@@ -222,15 +222,29 @@ async function loadHome(){
   const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
   const mProfit=mGross-mExp-mTax;
   const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
-  // Goal section in profit card
-  const goalSection=document.getElementById('phGoalSection');
-  if(goalSection) goalSection.style.display=goal>0?'block':'none';
+  // Header goal card
+  const goalCard=document.getElementById('homeGoalCard');
+  const helperText=document.getElementById('homeHelperText');
   if(goal>0){
-    setText('goalPctNum',Math.round(pct)+'%');
-    setText('goalAmt',fmtShort(goal));
-    const gf=document.getElementById('goalFill');
-    if(gf) gf.style.width=pct+'%';
+    if(goalCard) goalCard.style.display='flex';
+    if(helperText) helperText.style.display='none';
+    setText('hgcAmount',fmtShort(goal));
+    setText('hgcPct',Math.round(pct)+'% of goal');
+    const bar=document.getElementById('hgcBar');
+    if(bar) bar.style.width=pct+'%';
+  }else{
+    if(goalCard) goalCard.style.display='none';
+    if(helperText) helperText.style.display='flex';
   }
+  // Keep profit card goal bar in sync too
+  const goalRow=document.querySelector('.ph-goal-row');
+  const goalBarEl=document.querySelector('.ph-bar');
+  if(goalRow) goalRow.style.display=goal>0?'flex':'none';
+  if(goalBarEl) goalBarEl.style.display=goal>0?'block':'none';
+  setText('goalPctNum',Math.round(pct)+'%');
+  setText('goalAmt',fmtShort(goal));
+  const gf=document.getElementById('goalFill');
+  if(gf) gf.style.width=pct+'%';
 
   // Week stats
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
@@ -340,9 +354,9 @@ function setEarnFilter(f,btn){
 async function loadEarnings(){
   if(!currentUser)return;
   const {start,end}=getRange(earnFilter);
-  const periodLabels={day:'TODAY',week:'THIS WEEK',month:'THIS MONTH',year:'THIS YEAR'};
+  const periodLabels={day:'Today',week:'This Week',month:'This Month',year:'This Year'};
   const el=document.getElementById('earnTotalLabel');
-  if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter];
+  if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter].toUpperCase();
 
   const {data:inc}=await db.from('gp_income').select('*')
     .eq('user_id',currentUser.id)
