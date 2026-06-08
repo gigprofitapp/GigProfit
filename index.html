@@ -130,13 +130,13 @@
     </div>
     <!-- Goal card — shown when goal set, helper text when not -->
     <div id="homeGoalCard" class="home-goal-card" onclick="showPage('profile')">
-      <div class="hgc-right">
-        <div class="hgc-pct" id="hgcPct">0%</div>
-        <div class="hgc-bar-wrap"><div class="hgc-bar" id="hgcBar" style="width:0%"></div></div>
-      </div>
       <div class="hgc-left">
         <div class="hgc-label">Monthly Goal</div>
         <div class="hgc-amount" id="hgcAmount">$0</div>
+      </div>
+      <div class="hgc-right">
+        <div class="hgc-pct" id="hgcPct">0%</div>
+        <div class="hgc-bar-wrap"><div class="hgc-bar" id="hgcBar" style="width:0%"></div></div>
       </div>
       <svg class="hgc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
@@ -200,15 +200,7 @@
       </div>
     </div>
 
-    <!-- Goal progress -->
-    <div class="ph-goal-section" id="phGoalSection">
-      <div class="ph-goal-row">
-        <span class="ph-goal-label">Monthly Goal Progress</span>
-        <span class="ph-goal-pct"><em id="goalPctNum">0%</em></span>
-      </div>
-      <div class="ph-bar"><div class="ph-bar-fill" id="goalFill" style="width:0%"></div></div>
-      <div class="ph-goal-sub">of <span id="goalAmt">$0</span> goal</div>
-    </div>
+
 
   </div>
 
@@ -255,17 +247,17 @@
       </div>
       <div class="wg-col">
         <div class="wg-label">
-          <div class="wg-icon" style="background:rgba(74,144,217,0.14)"><svg viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="wg-icon" style="background:rgba(255,255,255,0.07)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
           Hours
         </div>
         <div class="wg-val" style="color:var(--text)" id="weekExp">0.0</div>
       </div>
       <div class="wg-col">
         <div class="wg-label">
-          <div class="wg-icon" style="background:rgba(139,92,246,0.14)"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="wg-icon earn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           Profit/hr
         </div>
-        <div class="wg-val warning" id="weekTax">$0</div>
+        <div class="wg-val positive" id="weekTax">$0</div>
       </div>
     </div>
     <div class="week-helper" id="weekHelper">Your weekly stats will appear here</div>
@@ -285,8 +277,8 @@
         </div>
       </div>
       <div class="gl-col">
-        <div class="gl-icon-wrap blue">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l2-8h14l2 8"/><path d="M5 17h14"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/></svg>
+        <div class="gl-icon-wrap teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l2-8h14l2 8"/><path d="M5 17h14"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/></svg>
         </div>
         <div class="gl-text">
           <div class="gl-val" id="glanceMiles">0 <em>mi</em></div>
@@ -294,7 +286,7 @@
         </div>
       </div>
       <div class="gl-col">
-        <div class="gl-icon-wrap green">
+        <div class="gl-icon-wrap teal">
           <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
         </div>
         <div class="gl-text">

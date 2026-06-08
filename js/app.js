@@ -236,15 +236,7 @@ async function loadHome(){
     if(goalCard) goalCard.style.display='none';
     if(helperText) helperText.style.display='flex';
   }
-  // Keep profit card goal bar in sync too
-  const goalRow=document.querySelector('.ph-goal-row');
-  const goalBarEl=document.querySelector('.ph-bar');
-  if(goalRow) goalRow.style.display=goal>0?'flex':'none';
-  if(goalBarEl) goalBarEl.style.display=goal>0?'block':'none';
-  setText('goalPctNum',Math.round(pct)+'%');
-  setText('goalAmt',fmtShort(goal));
-  const gf=document.getElementById('goalFill');
-  if(gf) gf.style.width=pct+'%';
+  // Keep profit card goal bar in sync too — removed (duplicate of header goal card)
 
   // Week stats
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
@@ -356,7 +348,7 @@ async function loadEarnings(){
   const {start,end}=getRange(earnFilter);
   const periodLabels={day:'Today',week:'This Week',month:'This Month',year:'This Year'};
   const el=document.getElementById('earnTotalLabel');
-  if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter].toUpperCase();
+  if(el)el.textContent='EARNINGS — '+(periodLabels[earnFilter]||'').toUpperCase();
 
   const {data:inc}=await db.from('gp_income').select('*')
     .eq('user_id',currentUser.id)
@@ -376,7 +368,7 @@ async function loadEarnings(){
   const pl=document.getElementById('platformList');
   if(pl){
     if(entries.length===0){
-      pl.innerHTML='<div class="empty-wrap"><p>No earnings in this period</p></div>';
+      pl.innerHTML='<div class="empty-wrap"><div class="empty-icon">📊</div><p>No earnings in this period</p></div>';
     }else{
       pl.innerHTML=entries.map(([p,amt],i)=>{
         const pct=total>0?Math.round((amt/total)*100):0;
@@ -399,7 +391,7 @@ async function loadEarnings(){
   const hl=document.getElementById('historyList');
   if(!hl)return;
   if(filtered.length===0){
-    hl.innerHTML='<div class="empty-wrap"><p>No entries in this period</p></div>';
+    hl.innerHTML='<div class="empty-wrap"><div class="empty-icon">📋</div><p>No entries in this period</p></div>';
     return;
   }
   hl.innerHTML=filtered.map(r=>{
@@ -713,14 +705,18 @@ function drawBarChart(canvasId,inc,period,start,color){
   const maxV=Math.max(...data,1);
   const n=labels.length;const bW=Math.max(cW/n*0.5,4);const bGap=cW/n;
 
-  // Grid
+  // Grid lines
   for(let i=0;i<=3;i++){
     const y=padT+(cH/3)*i;
     ctx.strokeStyle=gridClr;ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
   }
 
-  // Bars
+  // Zero baseline
+  ctx.strokeStyle=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)';
+  ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padL,padT+cH);ctx.lineTo(W-padR,padT+cH);ctx.stroke();
+
+  // Bars + labels
   data.forEach((val,i)=>{
     const x=padL+bGap*i+(bGap-bW)/2;
     const bh=Math.max((val/maxV)*cH,val>0?3:0);
