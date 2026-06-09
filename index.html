@@ -111,7 +111,7 @@
 <div id="homePage" class="page">
 <div class="page-scroll">
 
-  <!-- Greeting -->
+  <!-- Header: Greeting + Weekly Goal -->
   <div class="home-header">
     <div class="home-header-top">
       <div class="home-header-left">
@@ -121,35 +121,31 @@
         <div>
           <div class="home-greeting" id="homeGreeting">Good morning,</div>
           <div class="home-name" id="homeName">Driver 👋</div>
+          <div class="home-goal-sub" id="homeGoalSub" style="display:none"></div>
         </div>
       </div>
-      <button class="notif-btn" onclick="toggleTheme()">
+      <div id="homeGoalCard" class="home-goal-chip" onclick="showPage('profile')" style="display:none">
+        <div class="hgc-chip-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <div class="hgc-chip-text">
+          <div class="hgc-chip-label">Weekly Goal</div>
+          <div class="hgc-chip-amount" id="hgcAmount">$0</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--text4)"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <button class="notif-btn" id="themeToggleBtn" onclick="toggleTheme()" style="display:none">
         <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <div class="notif-dot"></div>
       </button>
-    </div>
-    <!-- Goal card — shown when goal set, helper text when not -->
-    <div id="homeGoalCard" class="home-goal-card" onclick="showPage('profile')">
-      <div class="hgc-left">
-        <div class="hgc-pct" id="hgcPct" style="text-align:left;margin-bottom:6px">0% of goal</div>
-        <div class="hgc-bar-wrap"><div class="hgc-bar" id="hgcBar" style="width:0%"></div></div>
-      </div>
-      <div class="hgc-right" style="text-align:right;flex-shrink:0">
-        <div class="hgc-label">Monthly Goal</div>
-        <div class="hgc-amount" id="hgcAmount">$0</div>
-      </div>
-      <svg class="hgc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <div id="homeHelperText" class="home-helper-text" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-      Set your monthly goal to start tracking progress
     </div>
   </div>
 
-  <!-- Profit Hero -->
+  <!-- Profit Hero Card -->
   <div class="profit-hero">
     <div class="ph-top">
-      <div class="ph-label">TODAY'S PROFIT</div>
+      <div class="ph-label" id="phLabel">TODAY'S PROFIT
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;opacity:0.5;margin-left:4px;vertical-align:middle"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
       <div class="ph-period-wrap">
         <button class="ph-pill" onclick="togglePeriodDropdown()">
           <span id="periodLabel">Today</span>
@@ -163,9 +159,14 @@
       </div>
     </div>
 
-    <!-- Amount -->
-    <div class="ph-amount" id="heroProfit">$0.00</div>
-    <div class="ph-sub" id="heroSub">Start logging to track your real profit</div>
+    <!-- Big profit number + trend button -->
+    <div class="ph-amount-row">
+      <div class="ph-amount" id="heroProfit">$0.00</div>
+      <button class="ph-trend-btn" onclick="showPage('reports')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </button>
+    </div>
+    <div class="ph-sub" id="heroSub">After expenses &amp; tax reserve</div>
 
     <!-- Mini stats row -->
     <div class="ph-mini-stats">
@@ -174,7 +175,7 @@
           <div class="ph-icon earn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           </div>
-          Earnings
+          EARNINGS
         </div>
         <div class="ph-mini-val" id="heroEarnings">$0</div>
       </div>
@@ -184,7 +185,7 @@
           <div class="ph-icon exp">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           </div>
-          Expenses
+          EXPENSES
         </div>
         <div class="ph-mini-val" id="heroExpenses">$0</div>
       </div>
@@ -194,29 +195,22 @@
           <div class="ph-icon tax">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
-          Tax Reserve
+          TAX RESERVE
         </div>
         <div class="ph-mini-val" id="heroTax">$0</div>
       </div>
     </div>
 
-
-
+    <!-- Weekly goal progress INSIDE card -->
+    <div id="phGoalSection" style="display:none">
+      <div class="ph-goal-row">
+        <span class="ph-goal-label">Weekly Goal Progress</span>
+        <span class="ph-goal-right"><span id="goalPctNum">0%</span> of <span id="goalAmt">$0</span></span>
+      </div>
+      <div class="ph-bar"><div class="ph-bar-fill" id="goalFill" style="width:0%"></div></div>
+    </div>
   </div>
 
-  <!-- Insight -->
-  <div class="insight-card">
-    <div class="ic-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    </div>
-    <div class="ic-text">
-      <div class="ic-label" id="insightLabel">Smart Insight</div>
-      <div class="ic-msg" id="insightMsg">Log your first earning to unlock smart insights.</div>
-    </div>
-    <div class="ic-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-  </div>
-
-  <!-- This Week -->
   <!-- Quick Actions -->
   <div class="quick-actions">
     <button class="qa-btn qa-income" onclick="showAddIncome()">
@@ -224,18 +218,21 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
       <div class="qa-title">Add Income</div>
-      <div class="qa-sub">Log your first earning</div>
+      <div class="qa-sub">Log your earnings</div>
     </button>
     <button class="qa-btn qa-expense" onclick="showAddExpense()">
       <div class="qa-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
       </div>
       <div class="qa-title">Add Expense</div>
-      <div class="qa-sub">Track your first expense</div>
+      <div class="qa-sub">Log your expense</div>
     </button>
   </div>
 
-  <div class="section-label" style="margin-top:20px">THIS WEEK</div>
+  <!-- This Week -->
+  <div class="section-label" style="margin-top:20px">THIS WEEK
+    <button class="section-link" onclick="showPage('earnings')">View all</button>
+  </div>
   <div class="week-card">
     <div class="week-grid">
       <div class="wg-col">
@@ -255,7 +252,7 @@
       <div class="wg-col">
         <div class="wg-label">
           <div class="wg-icon earn"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          Profit/hr
+          Profit / HR
         </div>
         <div class="wg-val positive" id="weekTax">$0</div>
       </div>
@@ -263,38 +260,16 @@
     <div class="week-helper" id="weekHelper">Your weekly stats will appear here</div>
   </div>
 
-  <!-- Today at a Glance -->
-  <div class="section-label" style="margin-top:20px">TODAY AT A GLANCE</div>
-  <div class="glance-card">
-    <div class="glance-grid">
-      <div class="gl-col">
-        <div class="gl-icon-wrap teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="gl-text">
-          <div class="gl-val" id="glanceHours">0 <em>hrs</em></div>
-          <div class="gl-label">Online time</div>
-        </div>
-      </div>
-      <div class="gl-col">
-        <div class="gl-icon-wrap teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l2-8h14l2 8"/><path d="M5 17h14"/><circle cx="7.5" cy="19" r="1.5"/><circle cx="16.5" cy="19" r="1.5"/></svg>
-        </div>
-        <div class="gl-text">
-          <div class="gl-val" id="glanceMiles">0 <em>mi</em></div>
-          <div class="gl-label">Miles driven</div>
-        </div>
-      </div>
-      <div class="gl-col">
-        <div class="gl-icon-wrap teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1ed8a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        </div>
-        <div class="gl-text">
-          <div class="gl-val" id="glanceHourly">$0 <em>/hr</em></div>
-          <div class="gl-label">Profit per hour</div>
-        </div>
-      </div>
+  <!-- Smart Insight -->
+  <div class="insight-card">
+    <div class="ic-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
     </div>
+    <div class="ic-text">
+      <div class="ic-label" id="insightLabel">Smart Insight</div>
+      <div class="ic-msg" id="insightMsg">Log your first earning to unlock smart insights.</div>
+    </div>
+    <div class="ic-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
   </div>
 
   <!-- Recent Activity -->
@@ -317,6 +292,8 @@
     </div>
   </div>
   <div style="height:8px"></div>
+
+
 
 </div><!-- /page-scroll -->
 </div><!-- /homePage -->
@@ -454,7 +431,7 @@
     <div class="sg-card">
       <div class="sg-row" onclick="editGoal()">
         <div class="sg-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
-        <div class="sg-content"><div class="sg-label2">Monthly Goal</div></div>
+        <div class="sg-content"><div class="sg-label2">Monthly Goal</div><div class="sg-value" id="siGoalVal">Used to calculate weekly target</div></div>
         <div class="sg-right"><span id="siGoal">$0</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
       </div>
       <div class="sg-row" onclick="editCurrency()">

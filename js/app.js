@@ -215,29 +215,41 @@ async function loadHome(){
     subEl.textContent=gross>0?(periodSubs[homePeriod]||'What you actually kept'):'Start logging to track your real profit';
   }
 
-  // Goal
+  // Goal — weekly
   const goal=userProfile?.monthly_goal||0;
-  const mGross=sumF(mInc,'amount')+sumF(mInc,'tips');
-  const mExp=sumF(mExpData,'amount');
-  const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
-  const mProfit=mGross-mExp-mTax;
-  const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
-  // Header goal card
-  const goalCard=document.getElementById('homeGoalCard');
-  const helperText=document.getElementById('homeHelperText');
-  if(goal>0){
-    if(goalCard) goalCard.style.display='flex';
-    if(helperText) helperText.style.display='none';
-    setText('hgcAmount',fmtShort(goal));
-    setText('hgcPct',Math.round(pct)+'% of goal');
+  const weekGoal=goal>0?Math.round(goal/4.33):0; // monthly → weekly approximation
+  const wGross2=sumF(wInc,'amount')+sumF(wInc,'tips');
+  const wExp2=sumF(wExp,'amount');
+  const wTax2=Math.max(0,wGross2-wExp2)*0.9235*txRate;
+  const wProfitForGoal=wGross2-wExp2-wTax2;
+  const pct=weekGoal>0?Math.min(100,(wProfitForGoal/weekGoal)*100):0;
 
-    const bar=document.getElementById('hgcBar');
-    if(bar) bar.style.width=pct+'%';
+  // Goal chip in header
+  const goalCard=document.getElementById('homeGoalCard');
+  if(weekGoal>0){
+    if(goalCard) goalCard.style.display='flex';
+    setText('hgcAmount',fmtShort(weekGoal));
+    // Sub text under name
+    const sub=document.getElementById('homeGoalSub');
+    if(sub){
+      sub.style.display='block';
+      const remaining=Math.max(0,weekGoal-wProfitForGoal);
+      sub.textContent=remaining>0?`You're ${fmtShort(remaining)} away from your weekly goal`:`Weekly goal reached! 🎉`;
+    }
+    // Goal bar inside profit card
+    const goalSection=document.getElementById('phGoalSection');
+    if(goalSection) goalSection.style.display='block';
+    setText('goalPctNum',Math.round(pct)+'%');
+    setText('goalAmt',fmtShort(weekGoal));
+    const fill=document.getElementById('goalFill');
+    if(fill) fill.style.width=pct+'%';
   }else{
     if(goalCard) goalCard.style.display='none';
-    if(helperText) helperText.style.display='flex';
+    const sub=document.getElementById('homeGoalSub');
+    if(sub) sub.style.display='none';
+    const goalSection=document.getElementById('phGoalSection');
+    if(goalSection) goalSection.style.display='none';
   }
-  // Keep profit card goal bar in sync too — removed (duplicate of header goal card)
 
   // Week stats
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
