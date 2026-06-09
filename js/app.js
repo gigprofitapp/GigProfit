@@ -228,7 +228,7 @@ async function loadHome(){
   const goalCard=document.getElementById('homeGoalCard');
   if(weekGoal>0){
     if(goalCard) goalCard.style.display='flex';
-    setText('hgcAmount',fmtShort(weekGoal));
+    setText('hgcAmount',fmtShort(goal)); // monthly amount in chip
     // Sub text under name
     const sub=document.getElementById('homeGoalSub');
     if(sub){
