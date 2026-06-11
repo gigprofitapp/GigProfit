@@ -795,8 +795,8 @@ function getRange(period){
   return{start:today,end:today};
 }
 function sumF(arr,f){return(arr||[]).reduce((s,r)=>s+parseFloat(r[f]||0),0);}
-function fmt(n){return'$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtShort(n){const v=Math.abs(parseFloat(n)||0);if(v>=1000)return'$'+(v/1000).toFixed(1)+'k';return'$'+v.toFixed(0);}
+function fmt(n){const v=parseFloat(n)||0;return(v<0?'-$':'$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtShort(n){const raw=parseFloat(n)||0;const v=Math.abs(raw);const sign=raw<0?'-':'';if(v>=1000)return sign+'$'+(v/1000).toFixed(1)+'k';return sign+'$'+v.toFixed(0);}
 function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function formatDateLong(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
 function formatDateShort(d){if(!d)return'';const now=new Date().toISOString().split('T')[0];if(d===now)return'Today';return formatDate(d);}
