@@ -208,48 +208,52 @@ async function loadHome(){
   setText('heroEarnings',fmtShort(gross));
   setText('heroExpenses',fmtShort(expenses));
   setText('heroTax',fmtShort(tax));
-  // Update sub text based on whether there's data
+  // Fix: show default only when truly no data (no income AND no expenses)
   const subEl=document.getElementById('heroSub');
   if(subEl){
-    const periodSubs={today:'What you actually kept today',week:'What you actually kept this week',month:'What you actually kept this month'};
-    subEl.textContent=gross>0?(periodSubs[homePeriod]||'What you actually kept'):'Start logging to track your real profit';
+    const hasData=(inc&&inc.length>0)||(exp&&exp.length>0);
+    subEl.textContent=hasData?'After expenses & tax reserve':'Start logging to track your real profit';
   }
 
-  // Goal — weekly
+  // Goal — monthly
   const goal=userProfile?.monthly_goal||0;
-  const weekGoal=goal>0?Math.round(goal/4.33):0; // monthly → weekly approximation
-  const wGross2=sumF(wInc,'amount')+sumF(wInc,'tips');
-  const wExp2=sumF(wExp,'amount');
-  const wTax2=Math.max(0,wGross2-wExp2)*0.9235*txRate;
-  const wProfitForGoal=wGross2-wExp2-wTax2;
-  const pct=weekGoal>0?Math.min(100,(wProfitForGoal/weekGoal)*100):0;
-
-  // Goal chip in header
+  const mGross=sumF(mInc,'amount')+sumF(mInc,'tips');
+  const mExp=sumF(mExpData,'amount');
+  const mTax=Math.max(0,mGross-mExp)*0.9235*txRate;
+  const mProfit=mGross-mExp-mTax;
+  const pct=goal>0?Math.min(100,(mProfit/goal)*100):0;
+  // Header goal card
   const goalCard=document.getElementById('homeGoalCard');
-  if(weekGoal>0){
+  const helperText=document.getElementById('homeHelperText');
+  if(goal>0){
     if(goalCard) goalCard.style.display='flex';
-    setText('hgcAmount',fmtShort(goal)); // monthly amount in chip
-    // Sub text under name
+    if(helperText) helperText.style.display='none';
+    setText('hgcAmount',fmtShort(goal));
+    setText('hgcPct',Math.round(pct)+'% of goal');
+    const bar=document.getElementById('hgcBar');
+    if(bar) bar.style.width=pct+'%';
+    // Sub text under greeting — uses monthly goal and monthly profit
     const sub=document.getElementById('homeGoalSub');
     if(sub){
       sub.style.display='block';
-      const remaining=Math.max(0,weekGoal-wProfitForGoal);
-      sub.textContent=remaining>0?`You're ${fmtShort(remaining)} away from your weekly goal`:`Weekly goal reached! 🎉`;
+      const remaining=Math.max(0,goal-mProfit);
+      sub.textContent=remaining>0?`You're ${fmtShort(remaining)} away from your monthly goal`:`Monthly goal reached! 🎉`;
     }
-    // Goal bar inside profit card
-    const goalSection=document.getElementById('phGoalSection');
-    if(goalSection) goalSection.style.display='block';
-    setText('goalPctNum',Math.round(pct)+'%');
-    setText('goalAmt',fmtShort(weekGoal));
-    const fill=document.getElementById('goalFill');
-    if(fill) fill.style.width=pct+'%';
   }else{
     if(goalCard) goalCard.style.display='none';
+    if(helperText) helperText.style.display='flex';
     const sub=document.getElementById('homeGoalSub');
     if(sub) sub.style.display='none';
-    const goalSection=document.getElementById('phGoalSection');
-    if(goalSection) goalSection.style.display='none';
   }
+  // Keep profit card goal bar in sync too
+  const goalRow=document.querySelector('.ph-goal-row');
+  const goalBarEl=document.querySelector('.ph-bar');
+  if(goalRow) goalRow.style.display=goal>0?'flex':'none';
+  if(goalBarEl) goalBarEl.style.display=goal>0?'block':'none';
+  setText('goalPctNum',Math.round(pct)+'%');
+  setText('goalAmt',fmtShort(goal));
+  const gf=document.getElementById('goalFill');
+  if(gf) gf.style.width=pct+'%';
 
   // Week stats
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
@@ -361,7 +365,7 @@ async function loadEarnings(){
   const {start,end}=getRange(earnFilter);
   const periodLabels={day:'Today',week:'This Week',month:'This Month',year:'This Year'};
   const el=document.getElementById('earnTotalLabel');
-  if(el)el.textContent='EARNINGS — '+(periodLabels[earnFilter]||'').toUpperCase();
+  if(el)el.textContent='EARNINGS — '+periodLabels[earnFilter].toUpperCase();
 
   const {data:inc}=await db.from('gp_income').select('*')
     .eq('user_id',currentUser.id)
@@ -381,7 +385,7 @@ async function loadEarnings(){
   const pl=document.getElementById('platformList');
   if(pl){
     if(entries.length===0){
-      pl.innerHTML='<div class="empty-wrap"><div class="empty-icon">📊</div><p>No earnings in this period</p></div>';
+      pl.innerHTML='<div class="empty-wrap"><p>No earnings in this period</p></div>';
     }else{
       pl.innerHTML=entries.map(([p,amt],i)=>{
         const pct=total>0?Math.round((amt/total)*100):0;
@@ -404,7 +408,7 @@ async function loadEarnings(){
   const hl=document.getElementById('historyList');
   if(!hl)return;
   if(filtered.length===0){
-    hl.innerHTML='<div class="empty-wrap"><div class="empty-icon">📋</div><p>No entries in this period</p></div>';
+    hl.innerHTML='<div class="empty-wrap"><p>No entries in this period</p></div>';
     return;
   }
   hl.innerHTML=filtered.map(r=>{
@@ -718,18 +722,14 @@ function drawBarChart(canvasId,inc,period,start,color){
   const maxV=Math.max(...data,1);
   const n=labels.length;const bW=Math.max(cW/n*0.5,4);const bGap=cW/n;
 
-  // Grid lines
+  // Grid
   for(let i=0;i<=3;i++){
     const y=padT+(cH/3)*i;
     ctx.strokeStyle=gridClr;ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
   }
 
-  // Zero baseline
-  ctx.strokeStyle=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)';
-  ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padL,padT+cH);ctx.lineTo(W-padR,padT+cH);ctx.stroke();
-
-  // Bars + labels
+  // Bars
   data.forEach((val,i)=>{
     const x=padL+bGap*i+(bGap-bW)/2;
     const bh=Math.max((val/maxV)*cH,val>0?3:0);
@@ -838,46 +838,7 @@ async function saveCurrency() {
   toast('Currency updated!', 'success');
 }
 
-// ── CHANGE EMAIL / PASSWORD ───────────────────
-function showChangeEmail(){
-  document.getElementById('newEmailInput').value='';
-  document.getElementById('changeEmailModal').classList.add('active');
-}
-
-async function saveEmail(){
-  const email=document.getElementById('newEmailInput').value.trim();
-  if(!email) return toast('Enter a new email','error');
-  const btn=document.getElementById('saveEmailBtn');
-  setLoading(btn,true,'Updating...');
-  const {error}=await db.auth.updateUser({email});
-  setLoading(btn,false,'Update Email');
-  if(error){toast(error.message,'error');return;}
-  closeModal('changeEmailModal');
-  toast('Confirmation sent to new email','success');
-}
-
-function showChangePassword(){
-  document.getElementById('newPasswordInput').value='';
-  document.getElementById('confirmPasswordInput').value='';
-  document.getElementById('changePasswordModal').classList.add('active');
-}
-
-async function savePassword(){
-  const pw=document.getElementById('newPasswordInput').value;
-  const confirm=document.getElementById('confirmPasswordInput').value;
-  if(!pw) return toast('Enter a new password','error');
-  if(pw.length<6) return toast('Password must be 6+ characters','error');
-  if(pw!==confirm) return toast('Passwords do not match','error');
-  const btn=document.getElementById('savePasswordBtn');
-  setLoading(btn,true,'Updating...');
-  const {error}=await db.auth.updateUser({password:pw});
-  setLoading(btn,false,'Update Password');
-  if(error){toast(error.message,'error');return;}
-  closeModal('changePasswordModal');
-  toast('Password updated!','success');
-}
-
-
+// ── DELETE ACCOUNT ───────────────────────────
 function showDeleteAccount(){
   document.getElementById('deleteConfirmInput').value='';
   document.getElementById('deleteAccountModal').classList.add('active');
