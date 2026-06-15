@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>GigProfit</title>
@@ -522,7 +522,7 @@
         <div class="form-group"><label>Hours</label><input type="number" id="incomeHours" placeholder="0.0" step="0.5" min="0"></div>
         <div class="form-group"><label>Miles</label><input type="number" id="incomeMiles" placeholder="0" step="0.1" min="0"></div>
       </div>
-      <div class="form-group"><label>Date</label><input type="date" id="incomeDate"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="incomeDate" onclick="try{this.showPicker()}catch(e){}"></div>
       <div class="form-group"><label>Notes</label><input type="text" id="incomeNotes" placeholder="Optional"></div>
     </div>
     <div class="modal-footer">
@@ -539,7 +539,7 @@
     <div class="modal-body">
       <div class="form-group"><label>Category</label><select id="expenseCategory"><option>Gas</option><option>Car Repair</option><option>Car Wash</option><option>Insurance</option><option>Phone Bill</option><option>Tolls</option><option>Parking</option><option>Food & Drinks</option><option>Other</option></select></div>
       <div class="form-group"><label>Amount ($)</label><input type="number" id="expenseAmount" placeholder="0.00" step="0.01" min="0"></div>
-      <div class="form-group"><label>Date</label><input type="date" id="expenseDate"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="expenseDate" onclick="try{this.showPicker()}catch(e){}"></div>
       <div class="form-group"><label>Notes</label><input type="text" id="expenseNotes" placeholder="Optional"></div>
       <div class="form-check"><input type="checkbox" id="expenseDeductible" checked><label for="expenseDeductible">Tax deductible expense</label></div>
     </div>
