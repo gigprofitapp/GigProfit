@@ -483,6 +483,7 @@ async function deleteIncome(id){
 }
 async function saveIncome(){
   const btn=document.getElementById('saveIncomeBtn');
+  if(btn.disabled) return;
   const amount=parseFloat(document.getElementById('incomeAmount').value);
   const date=document.getElementById('incomeDate').value;
   if(!amount||amount<=0)return toast('Enter a valid amount','error');
@@ -517,6 +518,7 @@ async function deleteExpense(id){
 }
 async function saveExpense(){
   const btn=document.getElementById('saveExpenseBtn');
+  if(btn.disabled) return;
   const amount=parseFloat(document.getElementById('expenseAmount').value);
   const date=document.getElementById('expenseDate').value;
   if(!amount||amount<=0)return toast('Enter a valid amount','error');
@@ -673,7 +675,7 @@ function exportPDF(income,expenses,label){
   modal.id='pdfModal';
   modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;overflow:hidden';
   modal.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top, 12px) + 12px) 16px 12px;background:#111;flex-shrink:0">
       <span style="color:#1ed8a4;font-weight:700;font-size:1rem">Tax Report</span>
       <div style="display:flex;gap:10px">
         <button onclick="window.print()" style="background:#1ed8a4;color:#000;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">🖨 Print / Save</button>
