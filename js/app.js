@@ -677,7 +677,7 @@ function exportPDF(income,expenses,label){
   // Inject print styles
   const printStyle=document.createElement('style');
   printStyle.id='pdfPrintStyle';
-  printStyle.textContent=`@media print{#pdfModal{background:none!important;position:static!important;}#pdfModalHeader{display:none!important;}#pdfContent{overflow:visible!important;padding:16px!important;}body>*:not(#pdfModal){display:none!important;}}`;
+  printStyle.textContent=`@media print{body{background:white!important;}#pdfModal{background:white!important;position:static!important;display:block!important;}#pdfModalHeader{display:none!important;}#pdfContent{overflow:visible!important;padding:16px!important;height:auto!important;min-height:unset!important;}body>*:not(#pdfModal){display:none!important;}}`;
   document.head.appendChild(printStyle);
   modal.innerHTML=`
     <div id="pdfModalHeader" style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top, 12px) + 12px) 16px 12px;background:#111;flex-shrink:0">
