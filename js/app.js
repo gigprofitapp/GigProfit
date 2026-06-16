@@ -177,7 +177,7 @@ async function loadHome(){
   setText('homeName',firstName+' 👋');
 
   const {start,end}=getRange(homePeriod);
-  const today=localDate(new Date());
+  const today=new Date().toISOString().split('T')[0];
   const weekStart=getRange('week').start;
   const monthStart=getRange('month').start;
 
@@ -319,7 +319,7 @@ async function loadHome(){
         <div class="act-sub">${isInc?'Payment':'Expense'}</div>
       </div>
       <div class="act-right">
-        <div class="act-amount ${isInc?'pos':'neg'}">${isInc?'':'−'}${fmt(amt)}</div>
+        <div class="act-amount ${isInc?'pos':'neg'}" style="${isInc?'color:var(--profit-color,#1ed8a4)':'color:var(--expense-color,#f16c6c)'}">${isInc?'':'−'}${fmt(amt)}</div>
         <div class="act-time">${formatDateShort(r.date)}</div>
       </div>
       <div class="act-actions">
@@ -446,7 +446,7 @@ async function loadExpenses(){
   el.innerHTML='<div class="entry-list">'+exp.map(r=>`<div class="entry-item">
     <div class="entry-icon exp">${expSvg()}</div>
     <div class="entry-info"><div class="entry-name">${r.category}</div><div class="entry-meta">${formatDate(r.date)}${r.notes?' · '+r.notes:''}${r.is_deductible?' · Deductible':''}</div></div>
-    <div class="entry-right"><div class="entry-amt neg">-${fmt(parseFloat(r.amount))}</div></div>
+    <div class="entry-right"><div class="entry-amt neg" style="color:var(--expense-color,#f16c6c)">-${fmt(parseFloat(r.amount))}</div></div>
     <div class="entry-actions">
       <button class="entry-edit" onclick="editExpense('${r.id}')">${editSvg()}</button>
       <button class="entry-del" onclick="deleteExpense('${r.id}')">${delSvg()}</button>
@@ -458,7 +458,7 @@ async function loadExpenses(){
 function showAddIncome(){
   editingId=null;
   document.getElementById('incomeModalTitle').textContent='Log Income';
-  document.getElementById('incomeDate').value=localDate(new Date());
+  document.getElementById('incomeDate').value=new Date().toISOString().split('T')[0];
   document.getElementById('incomePlatform').value=userProfile?.platforms?.[0]||'Uber';
   ['incomeAmount','incomeTips','incomeHours','incomeMiles','incomeNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('incomeModal').classList.add('active');
@@ -494,7 +494,7 @@ async function saveIncome(){
 // ── EXPENSE CRUD ─────────────────────────────
 function showAddExpense(){
   editingId=null;document.getElementById('expenseModalTitle').textContent='Add Expense';
-  document.getElementById('expenseDate').value=localDate(new Date());
+  document.getElementById('expenseDate').value=new Date().toISOString().split('T')[0];
   document.getElementById('expenseCategory').value='Gas';
   ['expenseAmount','expenseNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('expenseDeductible').checked=true;document.getElementById('expenseModal').classList.add('active');
@@ -541,7 +541,7 @@ async function loadReports(){
   const sel=document.getElementById('reportMonth');
   const [year,month]=(sel?.value||new Date().toISOString().slice(0,7)).split('-').map(Number);
   const start=`${year}-${String(month).padStart(2,'0')}-01`;
-  const end=localDate(new Date(year,month,0));
+  const end=new Date(year,month,0).toISOString().split('T')[0];
   const [{data:inc},{data:exp}]=await Promise.all([
     db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
     db.from('gp_expenses').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
@@ -614,7 +614,7 @@ async function loadProfilePage(){
 function showExportModal(){
   const now=new Date();const y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('exportFrom').value=`${y}-${m}-01`;
-  document.getElementById('exportTo').value=localDate(now);
+  document.getElementById('exportTo').value=now.toISOString().split('T')[0];
   document.getElementById('exportModal').classList.add('active');
 }
 function setRange(r,btn){
@@ -626,8 +626,8 @@ function setRange(r,btn){
   else if(r==='this-quarter'){const q=Math.floor(m/3);from=new Date(y,q*3,1);}
   else if(r==='this-year')from=new Date(y,0,1);
   else if(r==='all-time')from=new Date(2020,0,1);
-  document.getElementById('exportFrom').value=localDate(from);
-  document.getElementById('exportTo').value=localDate(to);
+  document.getElementById('exportFrom').value=from.toISOString().split('T')[0];
+  document.getElementById('exportTo').value=to.toISOString().split('T')[0];
 }
 async function runExport(){
   const from=document.getElementById('exportFrom').value;const to=document.getElementById('exportTo').value;
@@ -663,14 +663,38 @@ function exportPDF(income,expenses,label){
   const totalInc=sumF(income,'amount')+sumF(income,'tips');const totalExp=sumF(expenses,'amount');
   const miles=sumF(income,'miles');const txRate=userProfile?.country==='CA'?0.28:0.153;
   const tax=Math.max(0,totalInc-totalExp)*0.9235*txRate;const net=totalInc-totalExp-tax;
-  const win=window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>GigProfit Tax Report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#1a1a1a;font-size:12px}.logo{font-size:20px;font-weight:800;color:#1ed8a4}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.card{background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #1ed8a4}.label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:4px}.val{font-size:16px;font-weight:800}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px}th{background:#f0f0f0;padding:8px;text-align:left;font-weight:700}td{padding:7px;border-bottom:1px solid #f0f0f0}.disc{background:#fff8e6;border:1px solid #ffd980;border-radius:6px;padding:10px;font-size:10px;color:#7a5c00;margin-top:20px}</style></head><body>
-  <div class="logo">GigProfit</div><div style="color:#888;font-size:11px;margin-bottom:20px">Tax Report · ${label} · Generated ${new Date().toLocaleDateString()}</div>
-  <div class="grid"><div class="card"><div class="label">Total Income</div><div class="val" style="color:#1ed8a4">${fmt(totalInc)}</div></div><div class="card" style="border-color:#f16c6c"><div class="label">Total Expenses</div><div class="val" style="color:#f16c6c">${fmt(totalExp)}</div></div><div class="card" style="border-color:#e8a838"><div class="label">Est. Tax</div><div class="val" style="color:#e8a838">${fmt(tax)}</div></div><div class="card" style="border-color:#4a90d9"><div class="label">Net Profit</div><div class="val">${fmt(net)}</div></div><div class="card" style="border-color:#4a90d9"><div class="label">Total Miles</div><div class="val">${miles.toFixed(1)} mi</div></div><div class="card" style="border-color:#8b5cf6"><div class="label">Mileage Deduction</div><div class="val">${fmt(miles*0.70)}</div></div></div>
-  <h3 style="margin:20px 0 8px">Income (${income.length} entries)</h3><table><tr><th>Date</th><th>Platform</th><th>Amount</th><th>Tips</th><th>Miles</th></tr>${income.map(r=>`<tr><td>${r.date}</td><td>${r.platform}</td><td>$${parseFloat(r.amount).toFixed(2)}</td><td>$${parseFloat(r.tips||0).toFixed(2)}</td><td>${r.miles||0}</td></tr>`).join('')}</table>
-  <h3 style="margin:20px 0 8px">Expenses (${expenses.length} entries)</h3><table><tr><th>Date</th><th>Category</th><th>Amount</th><th>Deductible</th></tr>${expenses.map(r=>`<tr><td>${r.date}</td><td>${r.category}</td><td>$${parseFloat(r.amount).toFixed(2)}</td><td>${r.is_deductible?'Yes':'No'}</td></tr>`).join('')}</table>
-  <div class="disc">⚠️ This report is for informational purposes only and does not constitute tax advice.</div></body></html>`);
-  win.document.close();setTimeout(()=>win.print(),500);toast('PDF ready — use Print to save','success');
+  // Remove existing PDF modal if any
+  document.getElementById('pdfModal')?.remove();
+  const modal=document.createElement('div');
+  modal.id='pdfModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;overflow:hidden';
+  modal.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#111;flex-shrink:0">
+      <span style="color:#1ed8a4;font-weight:700;font-size:1rem">Tax Report</span>
+      <div style="display:flex;gap:10px">
+        <button onclick="window.print()" style="background:#1ed8a4;color:#000;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">🖨 Print / Save</button>
+        <button onclick="document.getElementById('pdfModal').remove()" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">✕ Close</button>
+      </div>
+    </div>
+    <div id="pdfContent" style="flex:1;overflow-y:auto;background:#fff;padding:32px;font-family:Arial,sans-serif;color:#1a1a1a;font-size:12px">
+      <div style="font-size:20px;font-weight:800;color:#1ed8a4">GigProfit</div>
+      <div style="color:#888;font-size:11px;margin-bottom:20px">Tax Report · ${label} · Generated ${new Date().toLocaleDateString()}</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0">
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #1ed8a4"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Total Income</div><div style="font-size:16px;font-weight:800;color:#1ed8a4">${fmt(totalInc)}</div></div>
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #f16c6c"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Total Expenses</div><div style="font-size:16px;font-weight:800;color:#f16c6c">${fmt(totalExp)}</div></div>
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #e8a838"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Est. Tax</div><div style="font-size:16px;font-weight:800;color:#e8a838">${fmt(tax)}</div></div>
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #4a90d9"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Net Profit</div><div style="font-size:16px;font-weight:800">${fmt(net)}</div></div>
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #4a90d9"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Total Miles</div><div style="font-size:16px;font-weight:800">${miles.toFixed(1)} mi</div></div>
+        <div style="background:#f8f9fa;border-radius:8px;padding:14px;border-left:4px solid #8b5cf6"><div style="font-size:10px;text-transform:uppercase;color:#888;margin-bottom:4px">Mileage Deduction</div><div style="font-size:16px;font-weight:800">${fmt(miles*0.70)}</div></div>
+      </div>
+      <h3 style="margin:20px 0 8px">Income (${income.length} entries)</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:#f0f0f0"><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Platform</th><th style="padding:8px;text-align:left">Amount</th><th style="padding:8px;text-align:left">Tips</th><th style="padding:8px;text-align:left">Miles</th></tr>${income.map(r=>`<tr><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.date}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.platform}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">$${parseFloat(r.amount).toFixed(2)}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">$${parseFloat(r.tips||0).toFixed(2)}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.miles||0}</td></tr>`).join('')}</table>
+      <h3 style="margin:20px 0 8px">Expenses (${expenses.length} entries)</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="background:#f0f0f0"><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Category</th><th style="padding:8px;text-align:left">Amount</th><th style="padding:8px;text-align:left">Deductible</th></tr>${expenses.map(r=>`<tr><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.date}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.category}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">$${parseFloat(r.amount).toFixed(2)}</td><td style="padding:7px;border-bottom:1px solid #f0f0f0">${r.is_deductible?'Yes':'No'}</td></tr>`).join('')}</table>
+      <div style="background:#fff8e6;border:1px solid #ffd980;border-radius:6px;padding:10px;font-size:10px;color:#7a5c00;margin-top:20px">⚠️ This report is for informational purposes only and does not constitute tax advice.</div>
+    </div>`;
+  document.body.appendChild(modal);
+  toast('Report ready — Print or Save as PDF','success');
 }
 
 // ── CHARTS ───────────────────────────────────
@@ -782,11 +806,10 @@ function editSvg(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function delSvg(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;}
 
 // ── UTILS ────────────────────────────────────
-function localDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function getRange(period){
-  const now=new Date(),today=localDate(now);
+  const now=new Date(),today=now.toISOString().split('T')[0];
   if(period==='today'||period==='day')return{start:today,end:today};
-  if(period==='week'){const day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-day+(day===0?-6:1));return{start:localDate(mon),end:today};}
+  if(period==='week'){const day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-day+(day===0?-6:1));return{start:mon.toISOString().split('T')[0],end:today};}
   if(period==='month')return{start:`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`,end:today};
   if(period==='year')return{start:`${now.getFullYear()}-01-01`,end:today};
   return{start:today,end:today};
@@ -796,7 +819,7 @@ function fmt(n){return'$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{min
 function fmtShort(n){const v=Math.abs(parseFloat(n)||0);if(v>=1000)return'$'+(v/1000).toFixed(1)+'k';return'$'+v.toFixed(0);}
 function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function formatDateLong(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
-function formatDateShort(d){if(!d)return'';const now=localDate(new Date());if(d===now)return'Today';return formatDate(d);}
+function formatDateShort(d){if(!d)return'';const now=new Date().toISOString().split('T')[0];if(d===now)return'Today';return formatDate(d);}
 function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 function closeModal(id){document.getElementById(id)?.classList.remove('active');editingId=null;}
 function setLoading(btn,loading,text){if(!btn)return;btn.disabled=loading;btn.textContent=text;}
