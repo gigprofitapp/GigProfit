@@ -638,7 +638,7 @@ function setRange(r,btn){
 async function runExport(){
   const from=document.getElementById('exportFrom').value;const to=document.getElementById('exportTo').value;
   const dataType=document.querySelector('input[name="expData"]:checked')?.value||'all';
-  const fmt2=document.querySelector('input[name="expFmt"]:checked')?.value||'pdf';
+  let fmt2=document.querySelector('input[name="expFmt"]:checked')?.value||'pdf';
   const btn=document.getElementById('runExportBtn');
   if(!from||!to)return toast('Select a date range','error');
   setLoading(btn,true,'Preparing...');
@@ -674,12 +674,17 @@ function exportPDF(income,expenses,label){
   const modal=document.createElement('div');
   modal.id='pdfModal';
   modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;overflow:hidden';
+  // Inject print styles
+  const printStyle=document.createElement('style');
+  printStyle.id='pdfPrintStyle';
+  printStyle.textContent=`@media print{#pdfModal{background:none!important;position:static!important;}#pdfModalHeader{display:none!important;}#pdfContent{overflow:visible!important;padding:16px!important;}body>*:not(#pdfModal){display:none!important;}}`;
+  document.head.appendChild(printStyle);
   modal.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top, 12px) + 12px) 16px 12px;background:#111;flex-shrink:0">
+    <div id="pdfModalHeader" style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top, 12px) + 12px) 16px 12px;background:#111;flex-shrink:0">
       <span style="color:#1ed8a4;font-weight:700;font-size:1rem">Tax Report</span>
       <div style="display:flex;gap:10px">
         <button onclick="window.print()" style="background:#1ed8a4;color:#000;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">🖨 Print / Save</button>
-        <button onclick="document.getElementById('pdfModal').remove()" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">✕ Close</button>
+        <button onclick="document.getElementById('pdfModal').remove();document.getElementById('pdfPrintStyle')?.remove();" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:0.85rem;cursor:pointer">✕ Close</button>
       </div>
     </div>
     <div id="pdfContent" style="flex:1;overflow-y:auto;background:#fff;padding:32px;font-family:Arial,sans-serif;color:#1a1a1a;font-size:12px">
