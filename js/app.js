@@ -205,6 +205,8 @@ async function loadHome(){
   const tax=Math.max(0,gross-expenses)*0.9235*txRate;
   const profit=gross-expenses-tax;
   setText('heroProfit',fmt(profit));
+  const heroProfitEl=document.getElementById('heroProfit');
+  if(heroProfitEl) heroProfitEl.style.color=profit<0?'var(--expense-color,#f16c6c)':'var(--profit-color,#00e5aa)';
   setText('heroEarnings',fmtShort(gross));
   setText('heroExpenses',fmtShort(expenses));
   setText('heroTax',fmtShort(tax));
@@ -236,7 +238,7 @@ async function loadHome(){
     const sub=document.getElementById('homeGoalSub');
     if(sub){
       sub.style.display='block';
-      const remaining=Math.max(0,goal-mProfit);
+      const remaining=goal-mProfit;
       sub.textContent=remaining>0?`You're ${fmtShort(remaining)} away from your monthly goal`:`Monthly goal reached! 🎉`;
     }
   }else{
@@ -259,10 +261,12 @@ async function loadHome(){
   const wGross=sumF(wInc,'amount')+sumF(wInc,'tips');
   const wExpTotal=sumF(wExp,'amount');
   const wTax=Math.max(0,wGross-wExpTotal)*0.9235*txRate;
-  const wProfit=Math.max(0,wGross-wExpTotal-wTax);
+  const wProfit=wGross-wExpTotal-wTax;
   const wHours=sumF(wInc,'hours');
   const wProfitPerHr=wHours>0?(wProfit/wHours):0;
   setText('weekEarn',fmtShort(wProfit));
+  const weekEarnEl=document.getElementById('weekEarn');
+  if(weekEarnEl) weekEarnEl.style.color=wProfit<0?'var(--expense-color,#f16c6c)':'var(--profit-color,#00e5aa)';
   setText('weekExp',wHours>0?wHours.toFixed(1):'0.0');
   setText('weekTax',wProfitPerHr>0?fmtShort(wProfitPerHr):'$0');
   // Show helper text when no data
@@ -815,8 +819,8 @@ function getRange(period){
   return{start:today,end:today};
 }
 function sumF(arr,f){return(arr||[]).reduce((s,r)=>s+parseFloat(r[f]||0),0);}
-function fmt(n){return'$'+Math.abs(parseFloat(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtShort(n){const v=Math.abs(parseFloat(n)||0);if(v>=1000)return'$'+(v/1000).toFixed(1)+'k';return'$'+v.toFixed(0);}
+function fmt(n){const v=parseFloat(n)||0;return(v<0?'-$':'$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtShort(n){const raw=parseFloat(n)||0;const v=Math.abs(raw);const sign=raw<0?'-':'';if(v>=1000)return sign+'$'+(v/1000).toFixed(1)+'k';return sign+'$'+v.toFixed(0);}
 function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function formatDateLong(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
 function formatDateShort(d){if(!d)return'';const now=new Date().toISOString().split('T')[0];if(d===now)return'Today';return formatDate(d);}
