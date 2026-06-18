@@ -177,7 +177,7 @@ async function loadHome(){
   setText('homeName',firstName+' 👋');
 
   const {start,end}=getRange(homePeriod);
-  const today=new Date().toISOString().split('T')[0];
+  const today=localDate(new Date());
   const weekStart=getRange('week').start;
   const monthStart=getRange('month').start;
 
@@ -290,7 +290,12 @@ async function loadHome(){
   buildInsight(wInc||[]);
 
   // Recent activity
-  const all=[...(inc||[]).map(r=>({...r,_k:'income'})),...(exp||[]).map(r=>({...r,_k:'expense'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  // Recent activity — always last 5 entries across all time, not filtered by period
+  const [{data:raInc},{data:raExp}]=await Promise.all([
+    db.from('gp_income').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(5),
+    db.from('gp_expenses').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(5),
+  ]);
+  const all=[...(raInc||[]).map(r=>({...r,_k:'income'})),...(raExp||[]).map(r=>({...r,_k:'expense'}))].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
   const ra=document.getElementById('recentActivity');
   const viewAllBtn=document.getElementById('viewAllBtn');
   if(!ra)return;
@@ -462,7 +467,7 @@ async function loadExpenses(){
 function showAddIncome(){
   editingId=null;
   document.getElementById('incomeModalTitle').textContent='Log Income';
-  document.getElementById('incomeDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('incomeDate').value=localDate(new Date());
   document.getElementById('incomePlatform').value=userProfile?.platforms?.[0]||'Uber';
   ['incomeAmount','incomeTips','incomeHours','incomeMiles','incomeNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('incomeModal').classList.add('active');
@@ -499,7 +504,7 @@ async function saveIncome(){
 // ── EXPENSE CRUD ─────────────────────────────
 function showAddExpense(){
   editingId=null;document.getElementById('expenseModalTitle').textContent='Add Expense';
-  document.getElementById('expenseDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('expenseDate').value=localDate(new Date());
   document.getElementById('expenseCategory').value='Gas';
   ['expenseAmount','expenseNotes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('expenseDeductible').checked=true;document.getElementById('expenseModal').classList.add('active');
@@ -547,7 +552,7 @@ async function loadReports(){
   const sel=document.getElementById('reportMonth');
   const [year,month]=(sel?.value||new Date().toISOString().slice(0,7)).split('-').map(Number);
   const start=`${year}-${String(month).padStart(2,'0')}-01`;
-  const end=new Date(year,month,0).toISOString().split('T')[0];
+  const end=localDate(new Date(year,month,0));
   const [{data:inc},{data:exp}]=await Promise.all([
     db.from('gp_income').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
     db.from('gp_expenses').select('*').eq('user_id',currentUser.id).gte('date',start).lte('date',end),
@@ -620,7 +625,7 @@ async function loadProfilePage(){
 function showExportModal(){
   const now=new Date();const y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('exportFrom').value=`${y}-${m}-01`;
-  document.getElementById('exportTo').value=now.toISOString().split('T')[0];
+  document.getElementById('exportTo').value=localDate(now);
   document.getElementById('exportModal').classList.add('active');
 }
 function setRange(r,btn){
@@ -632,8 +637,8 @@ function setRange(r,btn){
   else if(r==='this-quarter'){const q=Math.floor(m/3);from=new Date(y,q*3,1);}
   else if(r==='this-year')from=new Date(y,0,1);
   else if(r==='all-time')from=new Date(2020,0,1);
-  document.getElementById('exportFrom').value=from.toISOString().split('T')[0];
-  document.getElementById('exportTo').value=to.toISOString().split('T')[0];
+  document.getElementById('exportFrom').value=localDate(from);
+  document.getElementById('exportTo').value=localDate(to);
 }
 async function runExport(){
   const from=document.getElementById('exportFrom').value;const to=document.getElementById('exportTo').value;
@@ -817,10 +822,11 @@ function editSvg(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 function delSvg(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;}
 
 // ── UTILS ────────────────────────────────────
+function localDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function getRange(period){
-  const now=new Date(),today=now.toISOString().split('T')[0];
+  const now=new Date(),today=localDate(now);
   if(period==='today'||period==='day')return{start:today,end:today};
-  if(period==='week'){const day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-day+(day===0?-6:1));return{start:mon.toISOString().split('T')[0],end:today};}
+  if(period==='week'){const day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-day+(day===0?-6:1));return{start:localDate(mon),end:today};}
   if(period==='month')return{start:`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`,end:today};
   if(period==='year')return{start:`${now.getFullYear()}-01-01`,end:today};
   return{start:today,end:today};
@@ -830,7 +836,7 @@ function fmt(n){const v=parseFloat(n)||0;return(v<0?'-$':'$')+Math.abs(v).toLoca
 function fmtShort(n){const raw=parseFloat(n)||0;const v=Math.abs(raw);const sign=raw<0?'-':'';if(v>=1000)return sign+'$'+(v/1000).toFixed(1)+'k';return sign+'$'+v.toFixed(0);}
 function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function formatDateLong(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
-function formatDateShort(d){if(!d)return'';const now=new Date().toISOString().split('T')[0];if(d===now)return'Today';return formatDate(d);}
+function formatDateShort(d){if(!d)return'';const now=localDate(new Date());if(d===now)return'Today';return formatDate(d);}
 function setText(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
 function closeModal(id){document.getElementById(id)?.classList.remove('active');editingId=null;}
 function setLoading(btn,loading,text){if(!btn)return;btn.disabled=loading;btn.textContent=text;}
